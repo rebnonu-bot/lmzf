@@ -1,0 +1,40 @@
+{
+	"pages": [
+		{
+			"path": "pages/home/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/my/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		}
+	],
+	"subPackages": [
+		{
+			"root": "pages/login",
+			"pages": [
+				{
+					"path": "login",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				}
+			]
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "邻檬智付",
+		"navigationBarBackgroundColor": "#fff",
+		"backgroundColor": "#f3f3f3"
+	},
+	"easycom": {
+		"custom": {
+			"^t-(.*)": "@tdesign/uniapp/$1/$1.vue"
+		}
+	}
+}

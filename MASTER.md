@@ -1,6 +1,6 @@
-# 智慧物业 UI 设计规范 (Minimalist Tech Blue)
+# 邻檬智付 UI 设计规范 (Minimalist Tech Blue)
 
-本文档定义了“智慧物业与维修资金管理平台”的视觉设计语言，确保全平台 UI 风格的一致性。
+本文档定义了“邻檬智付”平台的视觉设计语言，确保全平台 UI 风格的一致性。
 
 ## 1. 颜色系统 (Color System)
 
