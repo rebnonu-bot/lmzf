@@ -11,8 +11,38 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/scan/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/city-select/index",
+			"style": {
+				"navigationStyle": "custom",
+				"disableScroll": false
+			}
 		}
 	],
+	"tabBar": {
+		"custom": false,
+		"color": "#64748B",
+		"selectedColor": "#3B82F6",
+		"backgroundColor": "#ffffff",
+		"list": [
+			{
+				"pagePath": "pages/home/index",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/my/index",
+				"text": "我的"
+			}
+		]
+	},
 	"subPackages": [
 		{
 			"root": "pages/login",

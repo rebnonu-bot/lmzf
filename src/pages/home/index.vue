@@ -1,5 +1,8 @@
 <template>
   <view class="page-container">
+    <!-- 顶部定位组件 -->
+    <LocationHeader />
+    
     <!-- 顶部渐变背景 (向下凸出的外弧) -->
     <view class="header-container">
       <view class="header-bg"></view>
@@ -47,12 +50,23 @@
     </view>
 
     <!-- 自定义底部导航 -->
-    <CustomTabBar />
+    <CustomTabBar :active="activeTab" />
   </view>
 </template>
 
 <script setup lang="ts">
 import CustomTabBar from '@/components/CustomTabBar.vue';
+import LocationHeader from '@/components/LocationHeader.vue';
+
+import { onShow } from '@dcloudio/uni-app';
+import { ref } from 'vue';
+
+const activeTab = ref<'home' | 'my'>('home');
+
+onShow(() => {
+  activeTab.value = 'home';
+  uni.hideTabBar();
+});
 </script>
 
 <style lang="less" scoped>
@@ -70,7 +84,7 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
   top: 0;
   left: 0;
   right: 0;
-  height: 344rpx; /* 对应 10.75rem (1rem=16px, 172px * 2) */
+  height: 384rpx; /* 对应 12rem (1rem=16px, 192px * 2) */
   z-index: 0;
   overflow: hidden;
 
@@ -129,15 +143,15 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
 
   .header-decor {
     position: absolute;
-    bottom: 60rpx;
-    right: 80rpx;
+    top: 200rpx; /* 往上回调 20rpx，紧贴胶囊下方 */
+    right: 100rpx; /* 往左移一点，从 60rpx 改为 100rpx */
     z-index: 2;
     perspective: 1500rpx;
 
     .card-stack {
         position: relative;
-        width: 200rpx;
-        height: 140rpx;
+        width: 240rpx; /* 整体放大一点，从 200rpx 改为 240rpx */
+        height: 160rpx; /* 整体放大一点，从 140rpx 改为 160rpx */
         transform-style: preserve-3d;
         animation: stack-float 8s ease-in-out infinite;
 
@@ -212,10 +226,10 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
 
         .decor-card {
         position: absolute;
-        width: 160rpx;
-        height: 100rpx;
+        width: 200rpx; /* 整体放大一点，从 160rpx 改为 200rpx */
+        height: 125rpx; /* 整体放大一点，从 100rpx 改为 125rpx */
         backdrop-filter: blur(12rpx);
-        border-radius: 16rpx;
+        border-radius: 20rpx; /* 随比例增大圆角 */
         border: 1rpx solid rgba(255, 255, 255, 0.3);
         box-shadow: 
           0 10rpx 30rpx rgba(0, 0, 0, 0.1),
@@ -230,12 +244,12 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
           
           .card-chip {
             position: absolute;
-            top: 25rpx;
-            left: 20rpx;
-            width: 32rpx;
-            height: 24rpx;
+            top: 30rpx;
+            left: 24rpx;
+            width: 40rpx; /* 放大芯片 */
+            height: 30rpx;
             background: linear-gradient(135deg, #FFD700, #FDB931);
-            border-radius: 4rpx;
+            border-radius: 6rpx;
             box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
             &::after {
               content: "";
@@ -270,9 +284,9 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
 
           .card-number {
             position: absolute;
-            bottom: 0.5rem;
-            left: 20rpx;
-            font-size: 14rpx;
+            bottom: 0.6rem;
+            left: 24rpx;
+            font-size: 16rpx; /* 字体放大 */
             line-height: 1;
             color: rgba(255, 255, 255, 0.9);
             font-family: 'Courier New', Courier, monospace;
@@ -282,9 +296,9 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
 
           .card-logo {
             position: absolute;
-            top: 25rpx;
-            right: 20rpx;
-            font-size: 18rpx;
+            top: 30rpx;
+            right: 24rpx;
+            font-size: 20rpx; /* 字体放大 */
             font-weight: 900;
             color: rgba(255, 255, 255, 1);
             font-style: italic;
@@ -296,14 +310,14 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
         &.card-2 {
           z-index: 2;
           background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.03));
-          transform: translateZ(20rpx) translate(30rpx, -18rpx) rotate(-6deg);
+          transform: translateZ(20rpx) translate(40rpx, -24rpx) rotate(-6deg); /* 偏移量随比例微调 */
           opacity: 0.9;
 
           .card-logo-mini {
             position: absolute;
-            top: 15rpx;
-            right: 15rpx;
-            font-size: 12rpx;
+            top: 18rpx;
+            right: 18rpx;
+            font-size: 14rpx;
             font-weight: bold;
             color: #FFD700;
             border: 1rpx solid rgba(255, 215, 0, 0.5);
@@ -316,7 +330,7 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
         &.card-3 {
           z-index: 1;
           background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-          transform: translateZ(-20rpx) translate(60rpx, -36rpx) rotate(-12deg);
+          transform: translateZ(-20rpx) translate(80rpx, -48rpx) rotate(-12deg); /* 偏移量随比例微调 */
           opacity: 0.8;
         }
       }

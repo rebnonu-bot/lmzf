@@ -1,56 +1,166 @@
 <template>
-  <t-tab-bar fixed placeholder :value="value" theme="tag" :split="false" @change="handleChange">
-    <t-tab-bar-item icon="home" value="home">首页</t-tab-bar-item>
-    <t-tab-bar-item icon="user" value="my">我的</t-tab-bar-item>
-  </t-tab-bar>
+  <view class="custom-tab-bar-container">
+    <view class="custom-tab-bar">
+      <!-- 首页 -->
+      <view class="tab-item" :class="{ active: localActive === 'home' }" @tap="goTo('/pages/home/index')">
+        <t-icon 
+          :name="localActive === 'home' ? 'home-filled' : 'home'" 
+          size="48rpx" 
+          :color="localActive === 'home' ? '#3b82f6' : '#64748b'"
+          class="tab-icon" 
+        />
+        <text class="tab-text">首页</text>
+      </view>
+
+      <!-- 扫一扫 -->
+      <view class="scan-wrapper" @tap="handleScan">
+        <view class="scan-button">
+          <t-icon name="qrcode" size="56rpx" color="#fff" class="scan-icon" />
+        </view>
+        <text class="scan-text">扫一扫</text>
+      </view>
+
+      <!-- 我的 -->
+      <view class="tab-item" :class="{ active: localActive === 'my' }" @tap="goTo('/pages/my/index')">
+        <t-icon 
+          :name="localActive === 'my' ? 'user-filled' : 'user'" 
+          size="48rpx" 
+          :color="localActive === 'my' ? '#3b82f6' : '#64748b'"
+          class="tab-icon" 
+        />
+        <text class="tab-text">我的</text>
+      </view>
+    </view>
+  </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 
-const value = ref('');
+const props = defineProps<{
+  active: 'home' | 'my'
+}>();
 
-// 获取当前页面对应的 tab 值
-const getCurrentTabValue = () => {
-  const pages = getCurrentPages();
-  const curPage = pages[pages.length - 1];
-  if (curPage) {
-    const route = (curPage as any).route || '';
-    const nameRe = /pages\/(\w+)\/index/.exec(route);
-    if (nameRe && nameRe[1]) {
-      return nameRe[1];
-    }
-  }
-  return '';
-};
+const localActive = ref(props.active);
 
-// 同步状态
-const syncState = () => {
-  value.value = getCurrentTabValue();
-};
+watch(() => props.active, (newVal) => {
+  localActive.value = newVal;
+}, { immediate: true });
 
 onMounted(() => {
-  syncState();
+  localActive.value = props.active;
 });
 
-const handleChange = (e: any) => {
-  const val = e?.value
-  if (val === value.value) {
-    return;
-  }
-  
-  uni.redirectTo({ 
-    url: `/pages/${val}/index`
+const goTo = (url: string) => {
+  uni.switchTab({ url });
+};
+
+const handleScan = () => {
+  uni.navigateTo({
+    url: '/pages/scan/index'
   });
 };
 </script>
 
 <style lang="less" scoped>
-@import '@/styles/variable.less';
+.custom-tab-bar-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background-color: #ffffff;
+  padding-bottom: env(safe-area-inset-bottom);
+  /* 使用 filter drop-shadow 代替 box-shadow，让阴影跟随圆弧 */
+  filter: drop-shadow(0 -4rpx 10rpx rgba(0, 0, 0, 0.05));
+}
 
-:deep(.t-tab-bar) {
-  --td-tab-bar-active-color: #3B82F6;
-  --td-tab-bar-bg-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+.custom-tab-bar {
+  display: flex;
+  height: 100rpx;
+  align-items: center;
+  position: relative;
+  /* 使用伪元素实现圆弧凸起背景 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120rpx;
+    height: 120rpx;
+    background-color: #ffffff;
+    border-radius: 50%;
+    z-index: -1;
+  }
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+
+  .tab-text {
+    font-size: 24rpx;
+    color: #64748b;
+    margin-top: 6rpx;
+    font-weight: 400 !important;
+    line-height: 1;
+  }
+
+  &.active {
+    .tab-text { color: #3b82f6 !important; }
+  }
+}
+
+.scan-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 100%;
+
+  .scan-button {
+    position: absolute;
+    top: -50rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100rpx;
+    height: 100rpx;
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
+    border: 8rpx solid #ffffff;
+    /* 调慢呼吸动效，使其更平稳 */
+    animation: scan-breathing 5s ease-in-out infinite;
+    /* 强制开启 GPU 加速，解决卡顿感 */
+    will-change: transform, box-shadow;
+  }
+
+  .scan-text {
+    font-size: 24rpx;
+    color: #64748b;
+    margin-top: 64rpx; /* 微调文字位置，确保在按钮正下方 */
+    font-weight: 400;
+  }
+}
+
+@keyframes scan-breathing {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.05); /* 减小放大倍数，从 1.1 降到 1.05 */
+    box-shadow: 0 10rpx 32rpx rgba(59, 130, 246, 0.5); /* 阴影也随之微调 */
+  }
 }
 </style>

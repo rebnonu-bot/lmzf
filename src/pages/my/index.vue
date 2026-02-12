@@ -1,7 +1,7 @@
 <template>
   <view class="page-container">
     <!-- 顶部渐变背景 (向下凸出的外弧) -->
-    <view class="header-container">
+    <view class="header-container" :style="headerStyle">
       <view class="header-bg"></view>
     </view>
     
@@ -54,13 +54,53 @@
     </view>
 
     <!-- 自定义底部导航 -->
-    <CustomTabBar />
+    <CustomTabBar :active="activeTab" />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import CustomTabBar from '@/components/CustomTabBar.vue';
+import { onShow } from '@dcloudio/uni-app';
+
+const activeTab = ref<'home' | 'my'>('my');
+
+const statusBarHeight = ref(0);
+const menuButtonInfo = ref({ top: 0, height: 0 });
+
+onShow(() => {
+  activeTab.value = 'my';
+  uni.hideTabBar();
+});
+
+onMounted(() => {
+  const systemInfo = uni.getSystemInfoSync();
+  statusBarHeight.value = systemInfo.statusBarHeight || 0;
+  
+  // #ifdef MP-WEIXIN
+  const menuButton = uni.getMenuButtonBoundingClientRect();
+  menuButtonInfo.value = menuButton;
+  // #endif
+});
+
+const headerStyle = computed(() => {
+  // #ifdef MP-WEIXIN
+  const top = menuButtonInfo.value.top;
+  const height = menuButtonInfo.value.height;
+  return {
+    paddingTop: `${top - 6}px`,
+    paddingBottom: '12px',
+    height: `${height + 12}px`
+  };
+  // #endif
+
+  // #ifndef MP-WEIXIN
+  return {
+    paddingTop: `${statusBarHeight.value}px`,
+    height: '56px'
+  };
+  // #endif
+});
 
 const userInfo = ref({
   name: '柠檬用户',
@@ -95,22 +135,18 @@ const handleLogout = () => {
 }
 
 .header-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 360rpx;
-  z-index: 0;
-  overflow: hidden;
-
+  width: 100%;
+  position: relative;
+  z-index: 1;
   .header-bg {
     position: absolute;
     top: 0;
-    left: -20%;
-    width: 140%;
-    height: 100%;
+    left: 0;
+    width: 100%;
+    height: 400rpx; /* 增加背景高度，防止内容重叠 */
     background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%);
-    border-radius: 0 0 50% 50%;
+    border-radius: 0 0 50% 50% / 0 0 40rpx 40rpx;
+    z-index: -1;
   }
 }
 
