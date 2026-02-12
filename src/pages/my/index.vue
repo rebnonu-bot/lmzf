@@ -1,8 +1,11 @@
 <template>
   <view class="page-container">
-    <!-- 顶部渐变背景 -->
-    <view class="header-bg"></view>
+    <!-- 顶部渐变背景 (向下凸出的外弧) -->
+    <view class="header-container">
+      <view class="header-bg"></view>
+    </view>
     
+    <!-- 移除导航栏占位，实现全屏贴顶 -->
     <view class="content">
       <!-- 用户信息卡片 -->
       <view class="user-card">
@@ -91,20 +94,30 @@ const handleLogout = () => {
   padding-bottom: 120rpx;
 }
 
-.header-bg {
+.header-container {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 360rpx;
-  background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 70%, #F4F9FF 100%);
   z-index: 0;
+  overflow: hidden;
+
+  .header-bg {
+    position: absolute;
+    top: 0;
+    left: -20%;
+    width: 140%;
+    height: 100%;
+    background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%);
+    border-radius: 0 0 50% 50%;
+  }
 }
 
 .content {
   position: relative;
   z-index: 1;
-  padding: 120rpx 32rpx 32rpx;
+  padding: 60rpx 32rpx 0;
 }
 
 .user-card {

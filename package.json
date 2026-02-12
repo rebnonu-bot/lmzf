@@ -1,6 +1,6 @@
 {
   "name": "lmzf",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
     "dev:custom": "uni -p",
     "dev": "npm run dev:h5",

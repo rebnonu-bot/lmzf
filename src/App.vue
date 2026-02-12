@@ -59,10 +59,22 @@ onHide(() => {
 /* 全局样式 */
 page {
   background-color: #f3f3f3;
+  overflow: hidden; /* 禁用全局滚动，防止侧边滑动 */
+  width: 100vw;
+  height: 100vh;
+}
+
+::-webkit-scrollbar {
+  display: none; /* 隐藏所有滚动条 */
+  width: 0 !important;
+  height: 0 !important;
+  -webkit-appearance: none;
+  background: transparent;
 }
 
 .page {
   height: 100vh;
   background-color: #fff;
+  overflow: hidden;
 }
 </style>
