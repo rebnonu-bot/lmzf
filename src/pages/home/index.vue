@@ -14,7 +14,6 @@
     
     <!-- 顶部核心内容区域 (积分+装饰) -->
     <view class="header-content-wrapper">
-      <!-- 积分展示区域 -->
       <view class="points-display">
         <view class="points-info">
           <text class="points-slogan">你家物业费邻檬帮你减</text>
@@ -69,6 +68,70 @@
       </view>
     </view>
 
+    <!-- 登录状态引导/信息模块 -->
+    <view class="user-info-module-wrapper">
+      <!-- 未登录状态 -->
+      <view v-if="!isLoggedIn" class="login-prompt-card">
+        <view class="user-section">
+          <view class="avatar-wrapper">
+            <image class="avatar" src="/static/avatar1.png" mode="aspectFill" />
+          </view>
+          <view class="text-content">
+            <text class="user-title">尊敬的用户</text>
+            <text class="user-subtitle">登录成为推广者实现税后收入</text>
+          </view>
+        </view>
+        <view class="auth-btn" @tap="handleLogin">
+          <text>授权登录</text>
+        </view>
+      </view>
+
+      <!-- 已登录状态 -->
+      <view v-else class="logged-in-card">
+        <view class="user-main-info">
+          <view class="left-section">
+            <image class="user-avatar" :src="userInfo.avatar" mode="aspectFill" />
+            <view class="name-level-section">
+              <view class="name-row">
+                  <text class="nickname">{{ userInfo.nickname }}</text>
+                  <text 
+                    class="level-badge" 
+                    :style="{ background: currentLevel.bg, color: currentLevel.color }"
+                  >
+                    {{ currentLevel.name }}
+                  </text>
+                </view>
+                <!-- 成就标签优化：数字高亮，整体更轻量 -->
+                <view class="achievement-tags">
+                  <view class="tag-item">
+                    <text class="label">加入第</text>
+                    <text class="value" :style="{ color: currentLevel.tagColor }">{{ userInfo.joinDays }}</text>
+                    <text class="label">天</text>
+                  </view>
+                  <text class="tag-divider">丨</text>
+                  <view class="tag-item">
+                    <text class="label">已邀</text>
+                    <text class="value" :style="{ color: currentLevel.tagColor }">{{ userInfo.inviteCount }}</text>
+                    <text class="label">人</text>
+                  </view>
+                </view>
+            </view>
+          </view>
+          
+          <view class="right-stats">
+            <view class="stat-item">
+              <text class="stat-value">{{ userInfo.coins }}</text>
+              <text class="stat-label">{{ userInfo.coinLabel }}</text>
+            </view>
+            <view class="stat-item">
+              <text class="stat-value">{{ userInfo.coupons }}</text>
+              <text class="stat-label">优惠券</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
     <!-- 自定义底部导航 -->
     <CustomTabBar :active="activeTab" />
   </view>
@@ -84,6 +147,43 @@ import { ref, onMounted, computed } from 'vue';
 const activeTab = ref<'home' | 'my'>('home');
 const displayPoints = ref(0);
 const targetPoints = 2580;
+const isLoggedIn = ref(true); // 切换为已登录状态进行展示
+
+// 模拟用户信息
+const userInfo = ref({
+    nickname: '梅菜扣肉',
+    avatar: '/static/avatar1.png',
+    level: 'gold', // copper: 铜牌, silver: 银牌, gold: 金牌
+    coins: 1250,
+    coinLabel: '柠檬币',
+    coupons: 3,
+    joinDays: 12,
+    inviteCount: 8
+  });
+
+  // 等级配置
+  const levelConfig = {
+    copper: {
+      name: '铜牌推广者',
+      bg: 'linear-gradient(135deg, #A16207, #78350F)',
+      color: '#FEF3C7',
+      tagColor: '#A16207'
+    },
+    silver: {
+      name: '银牌推广者',
+      bg: 'linear-gradient(135deg, #64748B, #334155)',
+      color: '#F1F5F9',
+      tagColor: '#64748B'
+    },
+    gold: {
+      name: '金牌推广者',
+      bg: 'linear-gradient(135deg, #F59E0B, #D97706)',
+      color: '#FFFBEB',
+      tagColor: '#D97706'
+    }
+  };
+
+  const currentLevel = computed(() => levelConfig[userInfo.value.level] || levelConfig.copper);
 
 // 计算抵扣金额动画
 const displayAmount = computed(() => {
@@ -106,11 +206,17 @@ const animatePoints = () => {
     displayPoints.value = Math.floor(easeOutExpo(progress) * targetPoints);
     
     if (progress < 1) {
-      requestAnimationFrame(update);
+      setTimeout(update, 16); // 模拟 60fps
     }
   };
   
   update();
+};
+
+const handleLogin = () => {
+  uni.navigateTo({
+    url: '/pages/login/login'
+  });
 };
 
 onMounted(() => {
@@ -130,7 +236,8 @@ onShow(() => {
   height: 100vh;
   background-color: #F4F9FF;
   position: relative;
-  overflow: hidden; /* 禁用首页滚动 */
+  overflow-y: auto; /* 允许纵向滚动以容纳新模块 */
+  padding-bottom: 120rpx; /* 为底部 TabBar 留出空间 */
 }
 
 .header-container {
@@ -296,12 +403,12 @@ onShow(() => {
         }
 
       .points-value {
-        font-size: 84rpx;
-        font-weight: 800;
+        font-size: 80rpx;
+        font-weight: 700;
         color: #ffffff;
         line-height: 1;
         letter-spacing: -2rpx;
-        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+        font-family: 'DIN Alternate', -apple-system, sans-serif;
         margin-bottom: 12rpx;
       }
 
@@ -355,195 +462,430 @@ onShow(() => {
 
   .header-decor {
     position: relative;
-    margin-top: 60rpx; /* 再次下移，从 40rpx 增加到 60rpx */
+    margin-top: 60rpx;
     margin-right: 20rpx;
     z-index: 2;
     perspective: 1500rpx;
 
     .card-stack {
-        position: relative;
-        width: 220rpx;
-        height: 140rpx;
-        transform-style: preserve-3d;
-        animation: stack-float 8s ease-in-out infinite;
+      position: relative;
+      width: 220rpx;
+      height: 140rpx;
+      transform-style: preserve-3d;
+      animation: stack-float 8s ease-in-out infinite;
+    }
 
-        .payment-icon {
+    .payment-icon {
+      position: absolute;
+      width: 36rpx;
+      height: 36rpx;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      color: #ffffff;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(4rpx);
+
+      &:active {
+        transform: scale(0.9) translateZ(150rpx) !important;
+        filter: brightness(1.05);
+      }
+
+      :deep(.t-icon) {
+        color: #ffffff !important;
+        filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
+      }
+
+      &.alipay {
+        top: -1.25rem;
+        left: 0.125rem;
+        background: linear-gradient(135deg, #7FDBFF, #0074D9);
+        opacity: 0.95;
+        border: 3rpx solid rgba(255, 255, 255, 0.6);
+        transform: translateZ(120rpx);
+        z-index: 20;
+        animation: icon-float-1 6.5s ease-in-out infinite;
+      }
+
+      &.wechat {
+        top: -0.875rem;
+        right: 0.375rem;
+        background: linear-gradient(135deg, #A8E6CF, #56AB2F);
+        opacity: 0.95;
+        border: 3rpx solid rgba(255, 255, 255, 0.6);
+        transform: translateZ(120rpx);
+        z-index: 20;
+        animation: icon-float-2 7.5s ease-in-out infinite;
+      }
+
+      &.security {
+        bottom: -0.2rem;
+        left: -1rem;
+        background: linear-gradient(135deg, #FFD3B6, #FF8C00);
+        opacity: 0.95;
+        border: 3rpx solid rgba(255, 255, 255, 0.6);
+        transform: translateZ(120rpx);
+        z-index: 20;
+        animation: icon-float-3 9.5s ease-in-out infinite;
+      }
+
+      &.miniprogram {
+        bottom: 0.125rem;
+        right: 1.25rem;
+        background: linear-gradient(135deg, #DCEDC1, #20BF55);
+        opacity: 0.95;
+        border: 3rpx solid rgba(255, 255, 255, 0.6);
+        transform: translateZ(120rpx);
+        z-index: 20;
+        animation: icon-float-4 7s ease-in-out infinite;
+      }
+    }
+
+    .decor-card {
+      position: absolute;
+      width: 200rpx;
+      height: 125rpx;
+      backdrop-filter: blur(12rpx);
+      border-radius: 20rpx;
+      border: 1rpx solid rgba(255, 255, 255, 0.2);
+      box-shadow: 
+        0 10rpx 30rpx rgba(0, 0, 0, 0.15),
+        inset 0 0 20rpx rgba(255, 255, 255, 0.1);
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      overflow: hidden;
+
+      &.card-1 {
+        z-index: 3;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+        transform: translateZ(60rpx) rotate(0deg);
+        
+        .card-chip {
+          position: absolute;
+          top: 30rpx;
+          left: 24rpx;
+          width: 40rpx;
+          height: 30rpx;
+          background: linear-gradient(135deg, #FFD700, #FDB931);
+          border-radius: 6rpx;
+          box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
+          &::after {
+            content: "";
             position: absolute;
-            width: 36rpx;
-            height: 36rpx;
-            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 1rpx;
+            background: rgba(0,0,0,0.1);
+            box-shadow: 0 4rpx 0 rgba(0,0,0,0.1), 0 -4rpx 0 rgba(0,0,0,0.1);
+          }
+        }
+
+        .card-shiny {
+          position: absolute;
+          top: 0;
+          left: -150%;
+          width: 200%;
+          height: 100%;
+          background: linear-gradient(
+            105deg, 
+            transparent 30%, 
+            rgba(255, 255, 255, 0.2) 45%, 
+            rgba(255, 255, 255, 0.3) 50%, 
+            rgba(255, 255, 255, 0.2) 55%, 
+            transparent 70%
+          );
+          transform: skewX(-20deg);
+          animation: card-shine 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .card-number {
+          position: absolute;
+          bottom: 0.6rem;
+          left: 24rpx;
+          font-size: 16rpx;
+          line-height: 1;
+          color: #ffffff;
+          font-family: 'Courier New', Courier, monospace;
+          letter-spacing: 2rpx;
+          text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.4);
+        }
+
+        .card-logo {
+          position: absolute;
+          top: 30rpx;
+          right: 24rpx;
+          font-size: 20rpx;
+          font-weight: 900;
+          color: #ffffff;
+          font-style: italic;
+          text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
+          letter-spacing: 1rpx;
+        }
+      }
+
+      &.card-2 {
+        z-index: 2;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+        transform: translateZ(20rpx) translate(40rpx, -24rpx) rotate(-6deg);
+        opacity: 0.95;
+
+        .card-logo-mini {
+          position: absolute;
+          top: 18rpx;
+          right: 18rpx;
+          font-size: 14rpx;
+          font-weight: bold;
+          color: #FFD700;
+          border: 1rpx solid rgba(255, 215, 0, 0.6);
+          padding: 2rpx 6rpx;
+          border-radius: 4rpx;
+          background: rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      &.card-3 {
+        z-index: 1;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        transform: translateZ(-20rpx) translate(80rpx, -48rpx) rotate(-12deg);
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+.user-info-module-wrapper {
+  position: absolute;
+  /* #ifdef MP-WEIXIN */
+  top: 500rpx; /* 小程序端：从 520rpx 减小到 500rpx，缩小间距 */
+  /* #endif */
+  /* #ifndef MP-WEIXIN */
+  top: 460rpx; /* H5/其他端：从 440rpx 增加到 460rpx，增大间距 */
+  /* #endif */
+  left: 32rpx;
+  right: 32rpx;
+  z-index: 10;
+  padding-bottom: 40rpx; /* 底部间距 */
+}
+
+  .login-prompt-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24rpx);
+  -webkit-backdrop-filter: blur(24rpx);
+  border-radius: 32rpx;
+  padding: 32rpx 24rpx; /* 稍微减小内边距，争取更多横向空间 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 
+    0 10rpx 40rpx rgba(0, 0, 0, 0.04),
+    inset 0 0 0 1rpx rgba(255, 255, 255, 0.4);
+  border: none;
+
+  .user-section {
+    display: flex;
+    align-items: center;
+    gap: 20rpx; /* 减小头像与文字间距 */
+    flex: 1;
+    min-width: 0; /* 允许子元素在必要时收缩，配合 nowrap */
+
+    .avatar-wrapper {
+      flex-shrink: 0; /* 头像不收缩 */
+      width: 90rpx; /* 稍微缩小头像 */
+      height: 90rpx;
+      background: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 4rpx solid #ffffff;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+
+      .avatar {
+        width: 80%; /* 头像图片稍微缩小，露出白色背景感 */
+        height: 80%;
+        opacity: 0.5; /* 未登录状态头像半透明 */
+        filter: grayscale(100%); /* 未登录状态灰度 */
+      }
+    }
+
+    .text-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10rpx;
+
+      .user-title {
+        font-size: 34rpx; /* 增大标题 */
+        color: #1E293B;
+        font-weight: 800;
+        letter-spacing: 1rpx;
+        white-space: nowrap; /* 防止标题换行 */
+      }
+
+      .user-subtitle {
+        font-size: 24rpx;
+        color: #64748B;
+        font-weight: 500;
+        line-height: 1.4;
+        white-space: nowrap; /* 防止副标题换行 */
+      }
+    }
+  }
+
+  .auth-btn {
+    flex-shrink: 0; /* 确保按钮不收缩 */
+    background: linear-gradient(135deg, #F59E0B, #FBBF24); /* 柠檬橙渐变，呼应主题 */
+    padding: 16rpx 36rpx;
+    border-radius: 40rpx;
+    box-shadow: 0 8rpx 20rpx rgba(245, 158, 11, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1rpx solid rgba(255, 255, 255, 0.2);
+
+    text {
+      color: #ffffff;
+      font-size: 26rpx;
+      font-weight: 800;
+      letter-spacing: 1rpx;
+      text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: scale(0.94) translateY(2rpx);
+      box-shadow: 0 4rpx 10rpx rgba(245, 158, 11, 0.15);
+      filter: brightness(1.05);
+    }
+  }
+}
+
+  .logged-in-card {
+  background: rgba(255, 255, 255, 0.7); /* 略微增加透明度 */
+  backdrop-filter: blur(24rpx); /* 增强模糊 */
+  -webkit-backdrop-filter: blur(24rpx);
+  border-radius: 32rpx;
+  box-shadow: 
+    0 10rpx 40rpx rgba(0, 0, 0, 0.04),
+    inset 0 0 0 1rpx rgba(255, 255, 255, 0.4); /* 内部柔和边框 */
+  border: none; /* 使用内阴影代替边框更显精致 */
+  overflow: hidden;
+
+  .user-main-info {
+    padding: 32rpx 28rpx; /* 稍微减小内边距，释放横向空间 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .left-section {
+      display: flex;
+      align-items: center;
+      gap: 20rpx; /* 减小头像与文字的间距 */
+      flex: 1;
+      min-width: 0; /* 允许内部元素缩放 */
+
+      .user-avatar {
+        flex-shrink: 0; /* 头像不收缩 */
+        width: 100rpx; /* 稍微缩小头像 */
+        height: 100rpx;
+        border-radius: 50%;
+        border: 4rpx solid #ffffff;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+      }
+
+      .name-level-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8rpx; /* 减小行间距 */
+        flex: 1;
+        min-width: 0;
+
+        .name-row {
+          display: flex;
+          align-items: center;
+          gap: 12rpx;
+          white-space: nowrap; /* 昵称行也不换行 */
+
+          .nickname {
+            font-size: 32rpx; /* 微调昵称大小 */
+            font-weight: 800;
+            color: #1E293B;
+            letter-spacing: 0.5rpx;
+            overflow: hidden;
+            text-overflow: ellipsis; /* 昵称过长时显示省略号 */
+          }
+
+          .level-badge {
+            padding: 4rpx 16rpx;
+            border-radius: 20rpx;
+            font-size: 18rpx;
+            font-weight: 700;
+            line-height: 1.4;
+            box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+          }
+        }
+
+        .achievement-tags {
+          display: flex;
+          align-items: center;
+          margin-top: 8rpx;
+          white-space: nowrap;
+          width: 100%;
+          overflow: hidden;
+
+          .tag-item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 4;
-            color: #ffffff;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(4rpx);
-
-            &:active {
-              transform: scale(0.9) translateZ(150rpx) !important;
-              filter: brightness(1.05);
-            }
-
-            :deep(.t-icon) {
-              color: #ffffff !important;
-              filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
-            }
-          
-            &.alipay {
-              top: -1.25rem;
-              left: 0.125rem;
-              background: linear-gradient(135deg, #7FDBFF, #0074D9);
-              opacity: 0.95;
-              border: 3rpx solid rgba(255, 255, 255, 0.6);
-              transform: translateZ(120rpx);
-              z-index: 20;
-              animation: icon-float-1 6.5s ease-in-out infinite;
-            }
-            
-            &.wechat {
-              top: -0.875rem;
-              right: 0.375rem;
-              background: linear-gradient(135deg, #A8E6CF, #56AB2F);
-              opacity: 0.95;
-              border: 3rpx solid rgba(255, 255, 255, 0.6);
-              transform: translateZ(120rpx);
-              z-index: 20;
-              animation: icon-float-2 7.5s ease-in-out infinite;
-            }
-
-            &.security {
-              bottom: -0.2rem;
-              left: -1rem;
-              background: linear-gradient(135deg, #FFD3B6, #FF8C00);
-              opacity: 0.95;
-              border: 3rpx solid rgba(255, 255, 255, 0.6);
-              transform: translateZ(120rpx);
-              z-index: 20;
-              animation: icon-float-3 9.5s ease-in-out infinite;
-            }
-
-            &.miniprogram {
-              bottom: 0.125rem;
-              right: 1.25rem;
-              background: linear-gradient(135deg, #DCEDC1, #20BF55);
-              opacity: 0.95;
-              border: 3rpx solid rgba(255, 255, 255, 0.6);
-              transform: translateZ(120rpx);
-              z-index: 20;
-              animation: icon-float-4 7s ease-in-out infinite;
-            }
-          }
-
-        .decor-card {
-        position: absolute;
-        width: 200rpx;
-        height: 125rpx;
-        backdrop-filter: blur(12rpx);
-        border-radius: 20rpx;
-        border: 1rpx solid rgba(255, 255, 255, 0.2);
-        box-shadow: 
-          0 10rpx 30rpx rgba(0, 0, 0, 0.15),
-          inset 0 0 20rpx rgba(255, 255, 255, 0.1);
-        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        overflow: hidden;
-
-        &.card-1 {
-          z-index: 3;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1)); /* 调暗一点，不再太白 */
-          transform: translateZ(60rpx) rotate(0deg);
-          
-          .card-chip {
-            position: absolute;
-            top: 30rpx;
-            left: 24rpx;
-            width: 40rpx;
-            height: 30rpx;
-            background: linear-gradient(135deg, #FFD700, #FDB931);
-            border-radius: 6rpx;
-            box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
-            &::after {
-              content: "";
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              width: 80%;
-              height: 1rpx;
-              background: rgba(0,0,0,0.1);
-              box-shadow: 0 4rpx 0 rgba(0,0,0,0.1), 0 -4rpx 0 rgba(0,0,0,0.1);
-            }
-          }
-
-          .card-shiny {
-            position: absolute;
-            top: 0;
-            left: -150%;
-            width: 200%;
-            height: 100%;
-            background: linear-gradient(
-              105deg, 
-              transparent 30%, 
-              rgba(255, 255, 255, 0.2) 45%, 
-              rgba(255, 255, 255, 0.3) 50%, 
-              rgba(255, 255, 255, 0.2) 55%, 
-              transparent 70%
-            );
-            transform: skewX(-20deg);
-            animation: card-shine 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-          }
-
-          .card-number {
-            position: absolute;
-            bottom: 0.6rem;
-            left: 24rpx;
-            font-size: 16rpx;
+            font-size: 22rpx;
             line-height: 1;
-            color: #ffffff; /* 增强对比度 */
-            font-family: 'Courier New', Courier, monospace;
-            letter-spacing: 2rpx;
-            text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.4); /* 增强文字阴影 */
+            flex-shrink: 0;
+
+            .label {
+              color: #64748B; /* 中性灰色，用于描述文字 */
+              font-weight: 500;
+            }
+
+            .value {
+              font-weight: 500; /* 统一字重，不额外加粗 */
+              margin: 0 4rpx; /* 数字与文字间距 */
+              font-family: 'DIN Alternate', -apple-system, sans-serif;
+            }
           }
 
-          .card-logo {
-            position: absolute;
-            top: 30rpx;
-            right: 24rpx;
-            font-size: 20rpx;
-            font-weight: 900;
-            color: #ffffff; /* 增强对比度 */
-            font-style: italic;
-            text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3); /* 增强文字阴影 */
-            letter-spacing: 1rpx;
-          }
-        }
-
-        &.card-2 {
-          z-index: 2;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08)); /* 调暗 */
-          transform: translateZ(20rpx) translate(40rpx, -24rpx) rotate(-6deg);
-          opacity: 0.95;
-
-          .card-logo-mini {
-            position: absolute;
-            top: 18rpx;
-            right: 18rpx;
-            font-size: 14rpx;
-            font-weight: bold;
-            color: #FFD700;
-            border: 1rpx solid rgba(255, 215, 0, 0.6);
-            padding: 2rpx 6rpx;
-            border-radius: 4rpx;
-            background: rgba(0, 0, 0, 0.1); /* 加深文字背景 */
+          .tag-divider {
+            font-size: 16rpx; /* 竖线通常比点高，稍微缩小字号 */
+            color: #CBD5E1;
+            margin: 0 10rpx;
+            flex-shrink: 0;
+            opacity: 0.6; /* 降低竖线的视觉强度 */
           }
         }
+      }
+    }
 
-        &.card-3 {
-          z-index: 1;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)); /* 调暗 */
-          transform: translateZ(-20rpx) translate(80rpx, -48rpx) rotate(-12deg);
-          opacity: 0.9;
+    .right-stats {
+      display: flex;
+      gap: 40rpx;
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6rpx;
+
+        .stat-value {
+              font-size: 38rpx;
+              font-weight: 900;
+              color: #1E293B;
+              font-family: 'DIN Alternate', -apple-system, sans-serif;
+            }
+
+        .stat-label {
+          font-size: 22rpx;
+          color: #64748B; /* 灰石板色 */
+          font-weight: 500;
         }
       }
     }
