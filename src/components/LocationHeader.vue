@@ -3,7 +3,7 @@
     <view class="brand-location" @click="goToCitySelect">
       <text class="brand-text">邻檬智付</text>
       <text class="dot">·</text>
-      <text class="city-text">{{ currentCityName }}</text>
+      <text class="city-text">{{ displayCityName }}</text>
       <t-icon name="chevron-down" size="32rpx" color="#fff" class="arrow-icon" />
     </view>
   </view>
@@ -30,9 +30,14 @@ onMounted(() => {
 });
 
 const currentCity = ref('赣州');
+const isLocated = ref(false);
 
-const currentCityName = computed(() => {
-  return currentCity.value.replace('市', '');
+const displayCityName = computed(() => {
+  if (isLocated.value) {
+    return currentCity.value.replace('市', '');
+  } else {
+    return '选择城市';
+  }
 });
 
 // 计算头部样式
@@ -72,6 +77,7 @@ const goToCitySelect = () => {
 // 监听城市更新事件
 const handleCityUpdate = (city: string) => {
   currentCity.value = city;
+  isLocated.value = true;
 };
 
 onUnmounted(() => {
@@ -122,8 +128,8 @@ onUnmounted(() => {
     }
     
     .arrow-icon {
-      margin-top: 4rpx; /* 稍微向下偏移以对齐更小的文字 */
-      width: 26rpx !important; /* 稍微缩小箭头 */
+      margin-top: 4rpx;
+      width: 26rpx !important;
       height: 26rpx !important;
       transition: transform 0.3s ease;
     }
