@@ -10,7 +10,7 @@ const config = {
     host: "your-ftp-host", // 您的 FTP 服务器地址
     port: 21,
     localRoot: path.join(__dirname, "dist/build/h5"),
-    remoteRoot: "/public_html/", // 远程服务器上的目标目录
+    remoteRoot: "/lmzf/", // 远程服务器上的目标目录，会自动创建 lmzf 文件夹
     include: ["*", "**/*"],      // 包含所有文件
     exclude: [],                  // 排除的文件
     deleteRemote: false,          // 是否在上传前删除远程目录下的文件
