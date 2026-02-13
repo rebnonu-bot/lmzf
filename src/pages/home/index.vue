@@ -1,19 +1,23 @@
 <template>
-  <scroll-view class="page-container" scroll-y scroll-with-animation>
-    <!-- 顶部定位组件 -->
-    <LocationHeader />
+  <scroll-view class="page-container" scroll-y scroll-with-animation @scroll="onScroll">
+    <!-- 骨架屏加载 -->
+    <PageSkeleton v-if="loading" />
     
-    <!-- 顶部渐变背景 (向下凸出的外弧) -->
-    <view class="header-bg-container">
-      <view class="header-bg"></view>
-      <!-- 阳光散光效果层 -->
-      <view class="sunlight-glow"></view>
-      <view class="sunlight-beam"></view>
-      <view class="sunlight-flare"></view>
-    </view>
-    
-    <!-- 主内容区域：包含积分卡片、用户信息卡片及后续模块 -->
-    <view class="main-content">
+    <template v-else>
+      <!-- 顶部定位组件 -->
+      <LocationHeader />
+      
+      <!-- 顶部渐变背景 (向下凸出的外弧) -->
+      <view class="header-bg-container">
+        <view class="header-bg"></view>
+        <!-- 阳光散光效果层 -->
+        <view class="sunlight-glow"></view>
+        <view class="sunlight-beam"></view>
+        <view class="sunlight-flare"></view>
+      </view>
+      
+      <!-- 主内容区域：包含积分卡片、用户信息卡片及后续模块 -->
+      <view class="main-content">
       <!-- 积分卡片 -->
       <view class="points-card">
         <view class="points-display">
@@ -72,24 +76,7 @@
 
       <!-- 用户信息卡片 -->
       <view class="user-card-wrapper">
-        <!-- 未登录状态 -->
-        <view v-if="!isLoggedIn" class="login-prompt-card">
-          <view class="user-section">
-            <view class="avatar-wrapper">
-              <image class="avatar" src="/static/avatar1.png" mode="aspectFill" />
-            </view>
-            <view class="text-content">
-              <text class="user-title">尊敬的用户</text>
-              <text class="user-subtitle">登录成为推广者实现税后收入</text>
-            </view>
-          </view>
-          <view class="auth-btn" @tap="handleLogin">
-            <text>授权登录</text>
-          </view>
-        </view>
-
-        <!-- 已登录状态 -->
-        <view v-else class="logged-in-card">
+        <view class="logged-in-card">
           <view class="user-main-info">
             <view class="left-section">
               <image class="user-avatar" :src="userInfo.avatar" mode="aspectFill" />
@@ -336,24 +323,34 @@
           <text>© 2026 邻檬智家 版权所有</text>
         </view>
       </view>
-    </view>
-
+      </view>
+    </template>
+    
     <!-- 自定义底部导航 -->
-    <CustomTabBar :active="activeTab" />
+    <CustomTabBar :active="activeTab" v-if="!loading" />
   </scroll-view>
 </template>
 
 <script setup lang="ts">
 import CustomTabBar from '@/components/CustomTabBar.vue';
 import LocationHeader from '@/components/LocationHeader.vue';
+import PageSkeleton from '@/components/PageSkeleton.vue';
 
 import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
 import { ref, onMounted, computed } from 'vue';
 
+// 加载状态
+const loading = ref(true);
+const pageLoaded = ref(false);
+
+// 页面滚动
+const onScroll = (e: any) => {
+  // 可以在这里处理滚动事件，如加载更多等
+};
+
 const activeTab = ref<'home' | 'my'>('home');
 const displayPoints = ref(0);
 const targetPoints = 12993;
-const isLoggedIn = ref(true); // 切换为已登录状态进行展示
 
 // 模拟用户信息
 const userInfo = ref({
@@ -419,22 +416,16 @@ const animatePoints = () => {
   update();
 };
 
-const handleLogin = () => {
-  uni.navigateTo({
-    url: '/pages/login/login'
-  });
-};
-
 const handleInvite = () => {
-  uni.showToast({ title: '邀请功能开发中', icon: 'none' });
+  uni.navigateTo({ url: '/pages/invite/poster' });
 };
 
 const handleOffline = () => {
-  uni.showToast({ title: '线下消费即将上线', icon: 'none' });
+  uni.navigateTo({ url: '/pages/stores/index' });
 };
 
 const handleOnline = () => {
-  uni.showToast({ title: '线上购物即将上线', icon: 'none' });
+  uni.navigateTo({ url: '/pages/platforms/index' });
 };
 
 // 复制客服微信
@@ -483,7 +474,12 @@ const showPartnerDetail = (partner: string) => {
 };
 
 onMounted(() => {
-  animatePoints();
+  // 模拟页面加载
+  setTimeout(() => {
+    loading.value = false;
+    pageLoaded.value = true;
+    animatePoints();
+  }, 800);
 });
 
 onShow(() => {
@@ -588,9 +584,9 @@ onPullDownRefresh(() => {
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 32rpx; /* 卡片之间的统一间距 */
+  gap: 48rpx; /* 增大模块间距 */
   padding: 0 32rpx;
-  padding-bottom: 40rpx; /* 底部补充间距 */
+  padding-bottom: 60rpx; /* 底部补充间距 */
   
   /* #ifdef MP-WEIXIN */
   padding-top: 160rpx; /* 小程序端导航栏较高，包含状态栏 */
@@ -967,108 +963,6 @@ onPullDownRefresh(() => {
 /* 用户信息卡片 */
 .user-card-wrapper {
   position: relative;
-
-  .login-prompt-card {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(24rpx);
-    -webkit-backdrop-filter: blur(24rpx);
-    border-radius: 32rpx;
-    padding: 36rpx 32rpx;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 
-      0 10rpx 40rpx rgba(0, 0, 0, 0.04),
-      inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
-    border: none;
-    position: relative;
-    overflow: hidden;
-
-    /* 装饰性光晕 */
-    &::before {
-      content: '';
-      position: absolute;
-      top: -30rpx;
-      right: -30rpx;
-      width: 100rpx;
-      height: 100rpx;
-      background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .user-section {
-      display: flex;
-      align-items: center;
-      gap: 24rpx;
-      flex: 1;
-      min-width: 0;
-
-      .avatar-wrapper {
-        flex-shrink: 0;
-        width: 88rpx;
-        height: 88rpx;
-        background: linear-gradient(135deg, #F1F5F9, #E2E8F0);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        border: 3rpx solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
-
-        .avatar {
-          width: 70%;
-          height: 70%;
-          opacity: 0.4;
-          filter: grayscale(100%);
-        }
-      }
-
-      .text-content {
-        display: flex;
-        flex-direction: column;
-        gap: 8rpx;
-
-        .user-title {
-          font-size: 32rpx;
-          color: #1E293B;
-          font-weight: 800;
-          letter-spacing: 0.5rpx;
-          white-space: nowrap;
-        }
-
-        .user-subtitle {
-          font-size: 24rpx;
-          color: #94A3B8;
-          font-weight: 500;
-          line-height: 1.4;
-          white-space: nowrap;
-        }
-      }
-    }
-
-    .auth-btn {
-      flex-shrink: 0;
-      background: linear-gradient(135deg, #3B82F6, #60A5FA);
-      padding: 18rpx 32rpx;
-      border-radius: 32rpx;
-      box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.3);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1rpx solid rgba(255, 255, 255, 0.3);
-
-      text {
-        color: #ffffff;
-        font-size: 26rpx;
-        font-weight: 600;
-        letter-spacing: 0.5rpx;
-      }
-
-      &:active {
-        transform: scale(0.96);
-        box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.25);
-      }
-    }
-  }
 
   .logged-in-card {
     background: rgba(255, 255, 255, 0.75);

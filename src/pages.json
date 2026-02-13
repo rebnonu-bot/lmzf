@@ -28,6 +28,30 @@
 				"disableScroll": false,
 				"enablePullDownRefresh": false
 			}
+		},
+		{
+			"path": "pages/webview/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/invite/poster",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/stores/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/platforms/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"tabBar": {
@@ -46,19 +70,6 @@
 			}
 		]
 	},
-	"subPackages": [
-		{
-			"root": "pages/login",
-			"pages": [
-				{
-					"path": "login",
-					"style": {
-						"navigationStyle": "custom"
-					}
-				}
-			]
-		}
-	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "邻檬智付",

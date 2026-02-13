@@ -1,72 +1,66 @@
 <template>
   <view class="page-container">
-    <!-- 顶部渐变背景 (向下凸出的外弧) -->
-    <view class="header-container" :style="headerStyle">
-      <view class="header-bg"></view>
+    <!-- 公司介绍卡片 -->
+    <view class="company-card">
+      <view class="company-header">
+        <view class="company-logo">
+          <text>邻檬</text>
+        </view>
+        <view class="company-info">
+          <text class="company-name">邻檬智付</text>
+          <text class="company-slogan">让天下没有难收的物业费</text>
+        </view>
+      </view>
+      <view class="company-desc">
+        邻檬智付是邻檬智家旗下的专业支付服务平台，致力于为社区业主提供便捷、安全的物业费缴纳及积分抵扣服务。
+      </view>
     </view>
-    
-    <!-- 移除导航栏占位，实现全屏贴顶 -->
-    <view class="content">
-      <!-- 用户信息卡片 -->
-      <view class="user-card">
-        <view class="user-info">
-          <t-avatar :image="userInfo.avatar" size="large" />
-          <view class="user-detail">
-            <view class="user-name">{{ userInfo.name }}</view>
-            <view class="user-status">
-              <t-tag variant="light" theme="primary" size="small">实名已认证</t-tag>
-            </view>
+
+    <!-- 联系方式 -->
+    <view class="contact-section">
+      <view class="section-title">联系我们</view>
+      <view class="contact-list">
+        <view class="contact-item" @tap="copyWechat">
+          <view class="contact-icon">
+            <t-icon name="chat" size="40rpx" color="#07C160" />
           </view>
-          <t-icon name="setting" size="48rpx" color="#64748B" @click="handleSetting" />
-        </view>
-      </view>
-
-      <!-- 资产概览 -->
-      <view class="asset-grid">
-        <view class="asset-item">
-          <text class="value">2</text>
-          <text class="label">银行卡</text>
-        </view>
-        <view class="asset-item">
-          <text class="value">12</text>
-          <text class="label">优惠券</text>
-        </view>
-        <view class="asset-item">
-          <text class="value">850</text>
-          <text class="label">积分</text>
-        </view>
-      </view>
-
-      <!-- 邀请返利模块 -->
-      <view class="invite-card">
-        <view class="invite-content">
-          <view class="invite-badge">
-            <text class="badge-icon">⚡</text>
-            <text class="badge-text">LIMITED OFFER</text>
+          <view class="contact-content">
+            <text class="contact-label">客服微信</text>
+            <text class="contact-value">lingmeng2024</text>
           </view>
-          <view class="invite-title">邀请邻居，永久返利</view>
-          <view class="invite-desc">新用户首单后，您将永久获得其订单2%的积分奖励。</view>
+          <view class="contact-action">
+            <text>复制</text>
+          </view>
         </view>
-        <view class="invite-btn" @click="handleInvite">
-          <text>立即邀请</text>
-          <t-icon name="chevron-right" size="28rpx" color="#ffffff" />
+        
+        <view class="contact-item" @tap="makePhoneCall">
+          <view class="contact-icon">
+            <t-icon name="call" size="40rpx" color="#3B82F6" />
+          </view>
+          <view class="contact-content">
+            <text class="contact-label">客服电话</text>
+            <text class="contact-value">400-888-8888</text>
+          </view>
+          <view class="contact-action">
+            <text>拨打</text>
+          </view>
+        </view>
+        
+        <view class="contact-item">
+          <view class="contact-icon">
+            <t-icon name="time" size="40rpx" color="#F59E0B" />
+          </view>
+          <view class="contact-content">
+            <text class="contact-label">服务时间</text>
+            <text class="contact-value">周一至周日 9:00-21:00</text>
+          </view>
         </view>
       </view>
+    </view>
 
-      <!-- 菜单列表 -->
-      <view class="menu-list">
-        <t-cell-group theme="card">
-          <t-cell title="支付设置" left-icon="secured" hover arrow />
-          <t-cell title="账单记录" left-icon="bill" hover arrow />
-          <t-cell title="帮助与客服" left-icon="service" hover arrow />
-          <t-cell title="关于邻檬智付" left-icon="info-circle" hover arrow />
-        </t-cell-group>
-      </view>
-
-      <!-- 退出登录 -->
-      <view class="logout-btn">
-        <t-button theme="light" variant="text" block @click="handleLogout">退出登录</t-button>
-      </view>
+    <!-- 版本信息 -->
+    <view class="version-info">
+      <text>版本: v{{ version }}</text>
     </view>
 
     <!-- 自定义底部导航 -->
@@ -75,91 +69,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref } from 'vue';
 import CustomTabBar from '@/components/CustomTabBar.vue';
-import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
+import { onShow } from '@dcloudio/uni-app';
 
 const activeTab = ref<'home' | 'my'>('my');
-
-const statusBarHeight = ref(0);
-const menuButtonInfo = ref({ top: 0, height: 0 });
+const version = ref('1.0.0');
 
 onShow(() => {
   activeTab.value = 'my';
   uni.hideTabBar();
 });
 
-// 下拉刷新
-onPullDownRefresh(() => {
-  // 模拟数据刷新
-  setTimeout(() => {
-    uni.stopPullDownRefresh();
-    uni.showToast({
-      title: '刷新成功',
-      icon: 'success',
-      duration: 800
-    });
-  }, 800);
-});
-
-onMounted(() => {
-  const systemInfo = uni.getSystemInfoSync();
-  statusBarHeight.value = systemInfo.statusBarHeight || 0;
-  
-  // #ifdef MP-WEIXIN
-  const menuButton = uni.getMenuButtonBoundingClientRect();
-  menuButtonInfo.value = menuButton;
-  // #endif
-});
-
-const headerStyle = computed(() => {
-  // #ifdef MP-WEIXIN
-  const top = menuButtonInfo.value.top;
-  const height = menuButtonInfo.value.height;
-  return {
-    paddingTop: `${top - 6}px`,
-    paddingBottom: '12px',
-    height: `${height + 12}px`
-  };
-  // #endif
-
-  // #ifndef MP-WEIXIN
-  return {
-    paddingTop: `${statusBarHeight.value}px`,
-    height: '56px'
-  };
-  // #endif
-});
-
-const userInfo = ref({
-  name: '柠檬用户',
-  avatar: '/static/avatar1.png',
-});
-
-const handleSetting = () => {
-  uni.showToast({ title: '设置', icon: 'none' });
-};
-
-const handleLogout = () => {
-  uni.showModal({
-    title: '提示',
-    content: '确定要退出登录吗？',
-    success: (res) => {
-      if (res.confirm) {
-        uni.reLaunch({ url: '/pages/login/login' });
-      }
+// 复制客服微信
+const copyWechat = () => {
+  uni.setClipboardData({
+    data: 'lingmeng2024',
+    success: () => {
+      uni.showToast({ title: '微信号已复制', icon: 'success' });
     }
   });
 };
 
-const handleInvite = () => {
-  uni.showToast({ title: '邀请功能开发中', icon: 'none' });
+// 拨打客服电话
+const makePhoneCall = () => {
+  uni.makePhoneCall({
+    phoneNumber: '400-888-8888',
+    fail: () => {
+      console.log('用户取消拨打');
+    }
+  });
 };
 </script>
 
 <style lang="less" scoped>
-@import '@/styles/variable.less';
-
 .page-container {
   min-height: 100vh;
   background-color: #F4F9FF;
@@ -167,186 +110,144 @@ const handleInvite = () => {
   padding-bottom: 120rpx;
 }
 
-.header-container {
-  width: 100%;
-  position: relative;
-  z-index: 1;
-  .header-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 400rpx; /* 增加背景高度，防止内容重叠 */
-    background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%);
-    border-radius: 0 0 50% 50% / 0 0 40rpx 40rpx;
-    z-index: -1;
-  }
-}
-
-.content {
-  position: relative;
-  z-index: 1;
-  padding: 60rpx 32rpx 0;
-}
-
-.user-card {
+/* 公司介绍卡片 */
+.company-card {
+  margin: 32rpx;
   background: #ffffff;
   border-radius: 32rpx;
   padding: 40rpx;
-  margin-bottom: 32rpx;
-  box-shadow: 0 8rpx 30rpx rgba(59, 130, 246, 0.08);
-
-  .user-info {
-    display: flex;
-    align-items: center;
-
-    .user-detail {
-      flex: 1;
-      margin-left: 24rpx;
-
-      .user-name {
-        font-size: 36rpx;
-        font-weight: bold;
-        color: #334155;
-        margin-bottom: 8rpx;
-      }
-
-      .user-status {
-        display: flex;
-      }
-    }
-  }
-}
-
-.asset-grid {
-  display: flex;
-  background: #ffffff;
-  border-radius: 32rpx;
-  padding: 40rpx 0;
-  margin-bottom: 32rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
-
-  .asset-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-
-    &:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 20%;
-      height: 60%;
-      width: 1px;
-      background: #F1F5F9;
-    }
-
-    .value {
-      font-size: 36rpx;
-      font-weight: bold;
-      color: #334155;
-      margin-bottom: 8rpx;
-    }
-
-    .label {
-      font-size: 24rpx;
-      color: #64748B;
-    }
-  }
 }
 
-.menu-list {
-  margin-bottom: 40rpx;
-  :deep(.t-cell-group--card) {
-    margin: 0;
-    border-radius: 32rpx;
-  }
-}
-
-.invite-card {
+.company-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: #ffffff;
-  border-radius: 32rpx;
-  padding: 32rpx;
-  margin-bottom: 32rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
-  position: relative;
-  overflow: hidden;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    right: -20rpx;
-    bottom: -20rpx;
-    width: 120rpx;
-    height: 120rpx;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%);
-    border-radius: 50%;
-  }
-
-  .invite-content {
-    flex: 1;
-
-    .invite-badge {
-      display: inline-flex;
-      align-items: center;
-      background: #EBF5FF;
-      border-radius: 24rpx;
-      padding: 6rpx 16rpx;
-      margin-bottom: 16rpx;
-
-      .badge-icon {
-        font-size: 20rpx;
-        margin-right: 8rpx;
-      }
-
-      .badge-text {
-        font-size: 22rpx;
-        font-weight: 600;
-        color: #3B82F6;
-        letter-spacing: 1rpx;
-      }
-    }
-
-    .invite-title {
-      font-size: 34rpx;
-      font-weight: bold;
-      color: #1E293B;
-      margin-bottom: 12rpx;
-      line-height: 1.4;
-    }
-
-    .invite-desc {
-      font-size: 26rpx;
-      color: #94A3B8;
-      line-height: 1.5;
-    }
-  }
-
-  .invite-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-    border-radius: 40rpx;
-    padding: 20rpx 32rpx;
-    margin-left: 24rpx;
-    box-shadow: 0 8rpx 20rpx rgba(59, 130, 246, 0.3);
-
-    text {
-      font-size: 28rpx;
-      font-weight: 500;
-      color: #ffffff;
-      margin-right: 4rpx;
-    }
+.company-logo {
+  width: 100rpx;
+  height: 100rpx;
+  background: linear-gradient(135deg, #3B82F6, #60A5FA);
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  text {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #fff;
   }
 }
 
-.logout-btn {
-  padding: 0 40rpx;
+.company-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.company-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1E293B;
+}
+
+.company-slogan {
+  font-size: 24rpx;
+  color: #64748B;
+}
+
+.company-desc {
+  font-size: 28rpx;
+  color: #475569;
+  line-height: 1.6;
+}
+
+/* 联系方式 */
+.contact-section {
+  margin: 0 32rpx 32rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1E293B;
+  margin-bottom: 20rpx;
+}
+
+.contact-list {
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 12rpx 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #F1F5F9;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.contact-icon {
+  width: 72rpx;
+  height: 72rpx;
+  background: #F8FAFC;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+
+.contact-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.contact-label {
+  font-size: 26rpx;
+  color: #94A3B8;
+}
+
+.contact-value {
+  font-size: 30rpx;
+  color: #1E293B;
+  font-weight: 500;
+}
+
+.contact-action {
+  padding: 8rpx 20rpx;
+  background: #EFF6FF;
+  border-radius: 20rpx;
+  
+  text {
+    font-size: 24rpx;
+    color: #3B82F6;
+    font-weight: 500;
+  }
+}
+
+/* 版本信息 */
+.version-info {
+  text-align: center;
+  padding: 40rpx 0;
+  
+  text {
+    font-size: 24rpx;
+    color: #94A3B8;
+  }
 }
 </style>
