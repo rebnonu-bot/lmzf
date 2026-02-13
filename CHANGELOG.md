@@ -1,5 +1,11 @@
 # 更新日志 (Changelog)
 
+## [0.1.6] - 2026-02-13
+
+### 变更
+- 同步最新的业务组件和页面代码（CustomTabBar, LocationHeader, Home, My, Scan 等）
+- 完善页面配置 [pages.json](file:///Users/liuzehui/Downloads/%E4%BB%A3%E7%A0%81/%E7%89%A9%E4%B8%9A/lmzf/src/pages.json)
+
 ## [0.1.5] - 2026-02-13
 
 ### 变更

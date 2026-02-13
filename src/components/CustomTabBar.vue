@@ -100,19 +100,23 @@ const handleScan = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   height: 100%;
+  padding-bottom: 16rpx;
+
+  .tab-icon {
+    margin-bottom: 6rpx;
+  }
 
   .tab-text {
     font-size: 24rpx;
     color: #64748b;
-    margin-top: 6rpx;
-    font-weight: 400 !important;
+    font-weight: 500;
     line-height: 1;
   }
 
   &.active {
-    .tab-text { color: #3b82f6 !important; }
+    .tab-text { color: #3b82f6; font-weight: 600; }
   }
 }
 
@@ -121,9 +125,10 @@ const handleScan = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   position: relative;
   height: 100%;
+  padding-bottom: 16rpx;
 
   .scan-button {
     position: absolute;
@@ -146,10 +151,10 @@ const handleScan = () => {
   }
 
   .scan-text {
-    font-size: 24rpx;
+    font-size: 26rpx;
     color: #64748b;
-    margin-top: 64rpx; /* 微调文字位置，确保在按钮正下方 */
-    font-weight: 400;
+    font-weight: 500;
+    line-height: 1;
   }
 }
 

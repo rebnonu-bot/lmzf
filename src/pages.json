@@ -3,13 +3,15 @@
 		{
 			"path": "pages/home/index",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true
 			}
 		},
 		{
 			"path": "pages/my/index",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true
 			}
 		},
 		{
@@ -23,7 +25,8 @@
 			"path": "pages/city-select/index",
 			"style": {
 				"navigationStyle": "custom",
-				"disableScroll": false
+				"disableScroll": false,
+				"enablePullDownRefresh": false
 			}
 		}
 	],

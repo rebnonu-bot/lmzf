@@ -1,10 +1,10 @@
 <template>
-  <view class="page-container">
+  <scroll-view class="page-container" scroll-y scroll-with-animation>
     <!-- 顶部定位组件 -->
     <LocationHeader />
     
     <!-- 顶部渐变背景 (向下凸出的外弧) -->
-    <view class="header-container">
+    <view class="header-bg-container">
       <view class="header-bg"></view>
       <!-- 阳光散光效果层 -->
       <view class="sunlight-glow"></view>
@@ -12,141 +12,347 @@
       <view class="sunlight-flare"></view>
     </view>
     
-    <!-- 顶部核心内容区域 (积分+装饰) -->
-    <view class="header-content-wrapper">
-      <view class="points-display">
-        <view class="points-info">
-          <text class="points-slogan">你家物业费邻檬帮你减</text>
-          <view class="points-label-row">
-            <text class="points-label">当前数字积分</text>
-            <view class="points-help-icon">?</view>
+    <!-- 主内容区域：包含积分卡片、用户信息卡片及后续模块 -->
+    <view class="main-content">
+      <!-- 积分卡片 -->
+      <view class="points-card">
+        <view class="points-display">
+          <view class="points-info">
+            <text class="points-slogan">你家物业费邻檬帮你减</text>
+            <view class="points-label-row">
+              <text class="points-label">当前数字积分</text>
+              <view class="points-help-icon">?</view>
+            </view>
+            <text class="points-value" :class="{ 'large-number': displayPoints >= 1000000, 'xlarge-number': displayPoints >= 10000000 }">{{ displayPoints }}</text>
+            <view class="points-action-row">
+              <view class="points-hint-tag">
+                <text class="points-hint-text">可抵 {{ displayAmount }} 元</text>
+              </view>
+              <view class="go-deduct-btn">
+                <text>去抵扣</text>
+                <t-icon name="chevron-right" size="24rpx" />
+              </view>
+            </view>
           </view>
-          <text class="points-value">{{ displayPoints }}</text>
-          <view class="points-action-row">
-            <view class="points-hint-tag">
-              <text class="points-hint-text">可抵 {{ displayAmount }} 元</text>
+        </view>
+
+        <!-- 右侧支付/金融装饰图标 -->
+        <view class="header-decor">
+          <view class="card-stack">
+            <!-- 支付宝图标装饰 -->
+            <view class="payment-icon alipay">
+              <t-icon name="logo-alipay" size="22rpx" />
             </view>
-            <view class="go-deduct-btn">
-              <text>去抵扣</text>
-              <t-icon name="chevron-right" size="24rpx" />
+            <!-- 微信支付图标装饰 -->
+            <view class="payment-icon wechat">
+              <t-icon name="logo-wechatpay" size="22rpx" />
             </view>
+            <!-- 快捷图标装饰 -->
+            <view class="payment-icon security">
+              <t-icon name="secured" size="20rpx" />
+            </view>
+            <!-- 微信小程序图标装饰 -->
+            <view class="payment-icon miniprogram">
+              <t-icon name="logo-miniprogram" size="20rpx" />
+            </view>
+            
+            <view class="decor-card card-1">
+              <view class="card-chip"></view>
+              <view class="card-shiny"></view>
+              <view class="card-number">**** **** **** 8888</view>
+              <view class="card-logo">LMZF</view>
+            </view>
+            <view class="decor-card card-2">
+              <view class="card-logo-mini">VIP</view>
+            </view>
+            <view class="decor-card card-3"></view>
           </view>
         </view>
       </view>
 
-      <!-- 右侧支付/金融装饰图标 -->
-      <view class="header-decor">
-        <view class="card-stack">
-          <!-- 支付宝图标装饰 -->
-          <view class="payment-icon alipay">
-            <t-icon name="logo-alipay" size="22rpx" />
+      <!-- 用户信息卡片 -->
+      <view class="user-card-wrapper">
+        <!-- 未登录状态 -->
+        <view v-if="!isLoggedIn" class="login-prompt-card">
+          <view class="user-section">
+            <view class="avatar-wrapper">
+              <image class="avatar" src="/static/avatar1.png" mode="aspectFill" />
+            </view>
+            <view class="text-content">
+              <text class="user-title">尊敬的用户</text>
+              <text class="user-subtitle">登录成为推广者实现税后收入</text>
+            </view>
           </view>
-          <!-- 微信支付图标装饰 -->
-          <view class="payment-icon wechat">
-            <t-icon name="logo-wechatpay" size="22rpx" />
+          <view class="auth-btn" @tap="handleLogin">
+            <text>授权登录</text>
           </view>
-          <!-- 快捷图标装饰 -->
-          <view class="payment-icon security">
-            <t-icon name="secured" size="20rpx" />
+        </view>
+
+        <!-- 已登录状态 -->
+        <view v-else class="logged-in-card">
+          <view class="user-main-info">
+            <view class="left-section">
+              <image class="user-avatar" :src="userInfo.avatar" mode="aspectFill" />
+              <view class="name-level-section">
+                <view class="name-row">
+                    <view class="nickname-wrapper">
+                      <text class="nickname">{{ userInfo.nickname }}</text>
+                      <text 
+                        class="level-badge" 
+                        :style="{ background: currentLevel.bg, color: currentLevel.color }"
+                      >
+                        {{ currentLevel.name }}
+                      </text>
+                    </view>
+                  </view>
+                  <!-- 成就标签优化：数字高亮，整体更轻量 -->
+                  <view class="achievement-tags">
+                    <view class="tag-item">
+                      <text class="label">加入第</text>
+                      <text class="value" :style="{ color: currentLevel.tagColor }">{{ userInfo.joinDays }}</text>
+                      <text class="label">天</text>
+                    </view>
+                    <text class="tag-divider">丨</text>
+                    <view class="tag-item">
+                      <text class="label">已邀</text>
+                      <text class="value" :style="{ color: currentLevel.tagColor }">{{ userInfo.inviteCount }}</text>
+                      <text class="label">人</text>
+                    </view>
+                  </view>
+              </view>
+            </view>
+            
+            <view class="right-stats">
+              <view class="stat-item">
+                <text class="stat-value">{{ userInfo.coins }}</text>
+                <text class="stat-label">{{ userInfo.coinLabel }}</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-value">{{ userInfo.coupons }}</text>
+                <text class="stat-label">优惠券</text>
+              </view>
+            </view>
           </view>
-          <!-- 微信小程序图标装饰 -->
-          <view class="payment-icon miniprogram">
-            <t-icon name="logo-miniprogram" size="20rpx" />
+        </view>
+      </view>
+      
+      <!-- 邀请返利模块 -->
+      <view class="invite-card">
+        <view class="invite-content">
+          <view class="invite-badge">
+            <text class="badge-icon">⚡</text>
+            <text class="badge-text">LIMITED OFFER</text>
+          </view>
+          <view class="invite-title">邀请邻居，永久返利</view>
+          <view class="invite-desc">新用户首单后，您将永久获得其订单2%的积分奖励。</view>
+        </view>
+        <view class="invite-btn" @tap="handleInvite">
+          <text>立即邀请</text>
+          <t-icon name="chevron-right" size="28rpx" color="#ffffff" />
+        </view>
+      </view>
+
+      <!-- 赚积分模块 -->
+      <view class="earn-points-section">
+        <view class="section-header">
+          <view class="header-left">
+            <view class="header-icon">
+              <t-icon name="gift" size="36rpx" color="#3B82F6" />
+            </view>
+            <text class="section-title">赚积分</text>
+          </view>
+          <text class="section-subtitle">多种方式 轻松获取</text>
+        </view>
+        
+        <view class="earn-methods">
+          <!-- 线下消费 -->
+          <view class="earn-card offline" @tap="handleOffline">
+            <view class="card-bg-icon">
+              <t-icon name="shop" size="80rpx" color="rgba(59, 130, 246, 0.15)" />
+            </view>
+            <view class="earn-icon-wrapper">
+              <view class="earn-icon">
+                <t-icon name="shop" size="40rpx" color="#3B82F6" />
+              </view>
+            </view>
+            <view class="earn-info">
+              <text class="earn-title">线下消费</text>
+              <text class="earn-desc">到店付款 即得积分</text>
+            </view>
+            <view class="earn-arrow">
+              <t-icon name="chevron-right" size="32rpx" color="#CBD5E1" />
+            </view>
           </view>
           
-          <view class="decor-card card-1">
-            <view class="card-chip"></view>
-            <view class="card-shiny"></view>
-            <view class="card-number">**** **** **** 8888</view>
-            <view class="card-logo">LMZF</view>
+          <!-- 线上CPS -->
+          <view class="earn-card online" @tap="handleOnline">
+            <view class="card-bg-icon">
+              <t-icon name="internet" size="80rpx" color="rgba(245, 158, 11, 0.15)" />
+            </view>
+            <view class="earn-icon-wrapper">
+              <view class="earn-icon orange">
+                <t-icon name="internet" size="40rpx" color="#F59E0B" />
+              </view>
+            </view>
+            <view class="earn-info">
+              <text class="earn-title">线上购物</text>
+              <text class="earn-desc">主流平台 返利积分</text>
+            </view>
+            <view class="earn-arrow">
+              <t-icon name="chevron-right" size="32rpx" color="#CBD5E1" />
+            </view>
           </view>
-          <view class="decor-card card-2">
-            <view class="card-logo-mini">VIP</view>
+        </view>
+        
+        </view>
+
+      <!-- 合作伙伴模块 -->
+      <view class="partners-section">
+        <view class="section-header">
+          <view class="header-left">
+            <view class="header-icon">
+              <t-icon name="heart" size="36rpx" color="#10B981" />
+            </view>
+            <text class="section-title">合作伙伴</text>
           </view>
-          <view class="decor-card card-3"></view>
+          <text class="section-subtitle">安全可信赖</text>
+        </view>
+        
+        <!-- 合作伙伴列表 -->
+        <view class="partners-row">
+          <!-- 邻檬智家 -->
+          <view class="partner-item" @tap="showPartnerDetail('lmzj')">
+            <view class="partner-logo-large">
+              <image src="/static/logo-lmzj.png" mode="aspectFit" />
+            </view>
+            <text class="partner-item-name">邻檬智家</text>
+            <text class="partner-item-tag brand">品牌方</text>
+          </view>
+          
+          <!-- 通联支付 -->
+          <view class="partner-item" @tap="showPartnerDetail('allinpay')">
+            <view class="partner-logo-large">
+              <image src="/static/logo-allinpay.png" mode="aspectFit" />
+            </view>
+            <text class="partner-item-name">通联支付</text>
+            <text class="partner-item-tag pay">支付通道</text>
+          </view>
+          
+          <!-- 邮储银行 -->
+          <view class="partner-item" @tap="showPartnerDetail('psbc')">
+            <view class="partner-logo-large">
+              <image src="/static/logo-psbc.png" mode="aspectFit" />
+            </view>
+            <text class="partner-item-name">邮储银行</text>
+            <text class="partner-item-tag bank">资金托管</text>
+          </view>
+        </view>
+        
+        <!-- 合作保障说明 -->
+        <view class="partners-guarantee">
+          <view class="guarantee-item">
+            <view class="guarantee-icon">
+              <t-icon name="secured" size="28rpx" color="#10B981" />
+            </view>
+            <text class="guarantee-text">资金银行托管</text>
+          </view>
+          <view class="guarantee-divider"></view>
+          <view class="guarantee-item">
+            <view class="guarantee-icon">
+              <t-icon name="check-circle" size="28rpx" color="#3B82F6" />
+            </view>
+            <text class="guarantee-text">央行支付牌照</text>
+          </view>
+          <view class="guarantee-divider"></view>
+          <view class="guarantee-item">
+            <view class="guarantee-icon">
+              <t-icon name="lock-on" size="28rpx" color="#F59E0B" />
+            </view>
+            <text class="guarantee-text">数据安全加密</text>
+          </view>
         </view>
       </view>
-    </view>
-
-    <!-- 登录状态引导/信息模块 -->
-    <view class="user-info-module-wrapper">
-      <!-- 未登录状态 -->
-      <view v-if="!isLoggedIn" class="login-prompt-card">
-        <view class="user-section">
-          <view class="avatar-wrapper">
-            <image class="avatar" src="/static/avatar1.png" mode="aspectFill" />
+      
+      <!-- 联系我们模块 -->
+      <view class="contact-section">
+        <view class="section-header">
+          <view class="header-left">
+            <view class="header-icon">
+              <t-icon name="chat" size="36rpx" color="#3B82F6" />
+            </view>
+            <text class="section-title">联系我们</text>
           </view>
-          <view class="text-content">
-            <text class="user-title">尊敬的用户</text>
-            <text class="user-subtitle">登录成为推广者实现税后收入</text>
-          </view>
+          <text class="section-subtitle">随时为您服务</text>
         </view>
-        <view class="auth-btn" @tap="handleLogin">
-          <text>授权登录</text>
-        </view>
-      </view>
-
-      <!-- 已登录状态 -->
-      <view v-else class="logged-in-card">
-        <view class="user-main-info">
-          <view class="left-section">
-            <image class="user-avatar" :src="userInfo.avatar" mode="aspectFill" />
-            <view class="name-level-section">
-              <view class="name-row">
-                  <text class="nickname">{{ userInfo.nickname }}</text>
-                  <text 
-                    class="level-badge" 
-                    :style="{ background: currentLevel.bg, color: currentLevel.color }"
-                  >
-                    {{ currentLevel.name }}
-                  </text>
-                </view>
-                <!-- 成就标签优化：数字高亮，整体更轻量 -->
-                <view class="achievement-tags">
-                  <view class="tag-item">
-                    <text class="label">加入第</text>
-                    <text class="value" :style="{ color: currentLevel.tagColor }">{{ userInfo.joinDays }}</text>
-                    <text class="label">天</text>
-                  </view>
-                  <text class="tag-divider">丨</text>
-                  <view class="tag-item">
-                    <text class="label">已邀</text>
-                    <text class="value" :style="{ color: currentLevel.tagColor }">{{ userInfo.inviteCount }}</text>
-                    <text class="label">人</text>
-                  </view>
-                </view>
+        
+        <view class="contact-cards">
+          <!-- 客服微信 -->
+          <view class="contact-card-wechat" @tap="copyWechat">
+            <view class="wechat-icon-wrapper">
+              <t-icon name="chat" size="40rpx" color="#07C160" />
+            </view>
+            <view class="wechat-info">
+              <text class="wechat-label">客服微信</text>
+              <text class="wechat-value">lingmeng2024</text>
+            </view>
+            <view class="wechat-action">
+              <text>复制</text>
             </view>
           </view>
           
-          <view class="right-stats">
-            <view class="stat-item">
-              <text class="stat-value">{{ userInfo.coins }}</text>
-              <text class="stat-label">{{ userInfo.coinLabel }}</text>
+          <!-- 工作时间 -->
+          <view class="contact-card-time">
+            <view class="time-icon-wrapper">
+              <t-icon name="time" size="40rpx" color="#F59E0B" />
             </view>
-            <view class="stat-item">
-              <text class="stat-value">{{ userInfo.coupons }}</text>
-              <text class="stat-label">优惠券</text>
+            <view class="time-info">
+              <text class="time-label">工作时间</text>
+              <text class="time-value">周一至周日 9:00-21:00</text>
             </view>
+            <view class="time-badge">全年无休</view>
           </view>
+        </view>
+      </view>
+      
+      <!-- 页脚 -->
+      <view class="page-footer">
+        <view class="footer-divider">
+          <view class="divider-line"></view>
+          <view class="divider-dot"></view>
+          <view class="divider-line"></view>
+        </view>
+        <view class="footer-content">
+          <text class="footer-brand">邻檬智付</text>
+          <text class="footer-slogan">让天下没有难收的物业费</text>
+        </view>
+        <view class="footer-links">
+          <text class="footer-link">用户协议</text>
+          <text class="footer-divider-text">|</text>
+          <text class="footer-link">隐私政策</text>
+          <text class="footer-divider-text">|</text>
+          <text class="footer-link">联系我们</text>
+        </view>
+        <view class="footer-copyright">
+          <text>© 2026 邻檬智家 版权所有</text>
         </view>
       </view>
     </view>
 
     <!-- 自定义底部导航 -->
     <CustomTabBar :active="activeTab" />
-  </view>
+  </scroll-view>
 </template>
 
 <script setup lang="ts">
 import CustomTabBar from '@/components/CustomTabBar.vue';
 import LocationHeader from '@/components/LocationHeader.vue';
 
-import { onShow } from '@dcloudio/uni-app';
+import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
 import { ref, onMounted, computed } from 'vue';
 
 const activeTab = ref<'home' | 'my'>('home');
 const displayPoints = ref(0);
-const targetPoints = 2580;
+const targetPoints = 12993;
 const isLoggedIn = ref(true); // 切换为已登录状态进行展示
 
 // 模拟用户信息
@@ -219,6 +425,63 @@ const handleLogin = () => {
   });
 };
 
+const handleInvite = () => {
+  uni.showToast({ title: '邀请功能开发中', icon: 'none' });
+};
+
+const handleOffline = () => {
+  uni.showToast({ title: '线下消费即将上线', icon: 'none' });
+};
+
+const handleOnline = () => {
+  uni.showToast({ title: '线上购物即将上线', icon: 'none' });
+};
+
+// 复制客服微信
+const copyWechat = () => {
+  uni.setClipboardData({
+    data: 'lingmeng2024',
+    success: () => {
+      uni.showToast({
+        title: '微信号已复制',
+        icon: 'success'
+      });
+    }
+  });
+};
+
+// 拨打客服电话
+const makePhoneCall = () => {
+  uni.makePhoneCall({
+    phoneNumber: '400-888-8888',
+    success: () => {
+      console.log('拨打电话成功');
+    },
+    fail: () => {
+      console.log('拨打电话失败或取消');
+    }
+  });
+};
+
+// 显示合作伙伴详情
+const showPartnerDetail = (partner: string) => {
+  const partnerInfo: Record<string, { name: string; desc: string }> = {
+    lmzj: { name: '邻檬智家', desc: '智慧社区服务提供商，致力于打造便民生活服务平台' },
+    allinpay: { name: '通联支付', desc: '拥有央行支付牌照，提供安全稳定的支付通道服务' },
+    psbc: { name: '邮储银行', desc: '国有大型商业银行，为资金提供托管保障' }
+  };
+  
+  const info = partnerInfo[partner];
+  if (info) {
+    uni.showModal({
+      title: info.name,
+      content: info.desc,
+      showCancel: false,
+      confirmText: '知道了'
+    });
+  }
+};
+
 onMounted(() => {
   animatePoints();
 });
@@ -227,30 +490,43 @@ onShow(() => {
   activeTab.value = 'home';
   uni.hideTabBar();
 });
+
+// 下拉刷新
+onPullDownRefresh(() => {
+  // 重置并重新播放积分动画
+  displayPoints.value = 0;
+  animatePoints();
+  
+  // 模拟数据刷新
+  setTimeout(() => {
+    uni.stopPullDownRefresh();
+    uni.showToast({
+      title: '刷新成功',
+      icon: 'success',
+      duration: 800
+    });
+  }, 800);
+});
 </script>
 
 <style lang="less" scoped>
 @import '@/styles/variable.less';
 
 .page-container {
-  height: 100vh;
+  height: 100vh; /* scroll-view 需要固定高度 */
   background-color: #F4F9FF;
-  position: relative;
-  overflow-y: auto; /* 允许纵向滚动以容纳新模块 */
-  padding-bottom: 120rpx; /* 为底部 TabBar 留出空间 */
 }
 
-.header-container {
+/* 顶部渐变背景 */
+.header-bg-container {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 384rpx; /* H5 默认高度 */
-  /* #ifdef MP-WEIXIN */
-  height: 480rpx; /* 稍微缩短一点，保持紧凑 */
-  /* #endif */
+  height: 14.25rem;
   z-index: 0;
   overflow: hidden;
+  pointer-events: none; /* 允许点击穿透到下层 */
 
   .header-bg {
     position: absolute;
@@ -259,8 +535,8 @@ onShow(() => {
     width: 160%;
     height: 100%;
     background: linear-gradient(180deg, #3B82F6, #60A5FA 70%, #F4F9FF);
-    border-radius: 0 0 50% 50%;
-    animation: breathing 8s ease-in-out infinite; /* 仅通过缩放和透明度实现呼吸感 */
+    border-radius: 0;
+    animation: breathing 8s ease-in-out infinite;
   }
 
   .sunlight-glow {
@@ -306,15 +582,26 @@ onShow(() => {
   }
 }
 
-.header-content-wrapper {
-  position: absolute;
-  top: 170rpx; /* 小程序默认高度 */
-  /* #ifndef MP-WEIXIN */
-  top: 100rpx; /* H5 稍微下移一点点 */
-  /* #endif */
-  left: 32rpx;
-  right: 32rpx;
+/* 主内容区域：统一绝对定位，内部使用 margin 控制间距 */
+.main-content {
+  position: relative;
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx; /* 卡片之间的统一间距 */
+  padding: 0 32rpx;
+  padding-bottom: 40rpx; /* 底部补充间距 */
+  
+  /* #ifdef MP-WEIXIN */
+  padding-top: 160rpx; /* 小程序端导航栏较高，包含状态栏 */
+  /* #endif */
+  /* #ifndef MP-WEIXIN */
+  padding-top: 120rpx; /* H5 端导航栏高度 */
+  /* #endif */
+}
+
+/* 积分卡片 */
+.points-card {
   display: flex;
   align-items: center;
   padding: 32rpx;
@@ -326,6 +613,7 @@ onShow(() => {
 
   .points-display {
     flex: 1;
+    min-width: 0;
     position: relative;
     display: flex;
     align-items: center;
@@ -334,7 +622,7 @@ onShow(() => {
     border-radius: 0;
     border: none;
     box-shadow: none;
-    margin-right: 0;
+    margin-right: 20rpx;
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     .points-info {
@@ -367,7 +655,7 @@ onShow(() => {
       .points-label-row {
           display: inline-block;
           position: relative;
-          align-self: flex-start; /* 确保容器只包裹文字宽度 */
+          align-self: flex-start;
   
           .points-label {
             font-size: 24rpx;
@@ -378,22 +666,22 @@ onShow(() => {
   
           .points-help-icon {
              position: absolute;
-             top: -6rpx; /* 向上移动，形成上标感 */
-             right: -30rpx; /* 略微调整间距以适应外框 */
+             top: -6rpx;
+             right: -30rpx;
              width: 24rpx;
              height: 24rpx;
              border-radius: 50%;
-             background: #FF9D5C; /* 实心橙色背景 */
-             border: 2rpx solid #ffffff; /* 添加白色外框 */
+             background: #FF9D5C;
+             border: 2rpx solid #ffffff;
              display: flex;
              align-items: center;
              justify-content: center;
              font-size: 16rpx;
-             color: #ffffff; /* 白色问号 */
+             color: #ffffff;
              font-weight: bold;
-             box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15); /* 加深阴影使外框更突出 */
+             box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
              transition: all 0.2s;
-             box-sizing: border-box; /* 确保边框不增加实际尺寸 */
+             box-sizing: border-box;
              
              &:active {
                transform: scale(0.9);
@@ -410,6 +698,20 @@ onShow(() => {
         letter-spacing: -2rpx;
         font-family: 'DIN Alternate', -apple-system, sans-serif;
         margin-bottom: 12rpx;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      /* 大数字自适应缩小字号 */
+      .points-value.large-number {
+        font-size: 56rpx;
+        letter-spacing: -1rpx;
+      }
+      
+      .points-value.xlarge-number {
+        font-size: 44rpx;
+        letter-spacing: -1rpx;
       }
 
       .points-action-row {
@@ -419,12 +721,12 @@ onShow(() => {
 
         .points-hint-tag {
           background: rgba(34, 197, 94, 0.9);
-          padding: 6rpx 20rpx;
-          border-radius: 10rpx;
+          padding: 8rpx 24rpx;
+          border-radius: 12rpx;
           box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.2);
 
           .points-hint-text {
-            font-size: 24rpx;
+            font-size: 26rpx;
             color: #ffffff;
             font-weight: 700;
             white-space: nowrap;
@@ -434,21 +736,25 @@ onShow(() => {
         .go-deduct-btn {
           display: flex;
           align-items: center;
-          gap: 4rpx;
-          background: #FF9D5C; /* 改为实心橙色，与问号角标呼应 */
-          padding: 6rpx 20rpx;
-          border-radius: 10rpx;
+          gap: 6rpx;
+          background: #FF9D5C;
+          padding: 8rpx 24rpx;
+          border-radius: 12rpx;
           box-shadow: 0 4rpx 12rpx rgba(255, 157, 92, 0.3);
           transition: all 0.2s;
+          white-space: nowrap;
+          flex-shrink: 0;
 
           text {
-            font-size: 22rpx;
+            font-size: 26rpx;
             color: #ffffff;
             font-weight: 800;
+            white-space: nowrap;
           }
 
           :deep(.t-icon) {
             color: #ffffff !important;
+            flex-shrink: 0;
           }
 
           &:active {
@@ -463,9 +769,10 @@ onShow(() => {
   .header-decor {
     position: relative;
     margin-top: 60rpx;
-    margin-right: 20rpx;
+    margin-right: 0;
     z-index: 2;
     perspective: 1500rpx;
+    flex-shrink: 0;
 
     .card-stack {
       position: relative;
@@ -500,7 +807,7 @@ onShow(() => {
       }
 
       &.alipay {
-        top: -1.25rem;
+        top: -2rem;
         left: 0.125rem;
         background: linear-gradient(135deg, #7FDBFF, #0074D9);
         opacity: 0.95;
@@ -511,7 +818,7 @@ onShow(() => {
       }
 
       &.wechat {
-        top: -0.875rem;
+        top: -1.5rem;
         right: 0.375rem;
         background: linear-gradient(135deg, #A8E6CF, #56AB2F);
         opacity: 0.95;
@@ -522,7 +829,7 @@ onShow(() => {
       }
 
       &.security {
-        bottom: -0.2rem;
+        bottom: 0.5rem;
         left: -1rem;
         background: linear-gradient(135deg, #FFD3B6, #FF8C00);
         opacity: 0.95;
@@ -533,7 +840,7 @@ onShow(() => {
       }
 
       &.miniprogram {
-        bottom: 0.125rem;
+        bottom: 0.8rem;
         right: 1.25rem;
         background: linear-gradient(135deg, #DCEDC1, #20BF55);
         opacity: 0.95;
@@ -657,235 +964,279 @@ onShow(() => {
   }
 }
 
-.user-info-module-wrapper {
-  position: absolute;
-  /* #ifdef MP-WEIXIN */
-  top: 500rpx; /* 小程序端：从 520rpx 减小到 500rpx，缩小间距 */
-  /* #endif */
-  /* #ifndef MP-WEIXIN */
-  top: 460rpx; /* H5/其他端：从 440rpx 增加到 460rpx，增大间距 */
-  /* #endif */
-  left: 32rpx;
-  right: 32rpx;
-  z-index: 10;
-  padding-bottom: 40rpx; /* 底部间距 */
-}
+/* 用户信息卡片 */
+.user-card-wrapper {
+  position: relative;
 
   .login-prompt-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(24rpx);
-  -webkit-backdrop-filter: blur(24rpx);
-  border-radius: 32rpx;
-  padding: 32rpx 24rpx; /* 稍微减小内边距，争取更多横向空间 */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 
-    0 10rpx 40rpx rgba(0, 0, 0, 0.04),
-    inset 0 0 0 1rpx rgba(255, 255, 255, 0.4);
-  border: none;
-
-  .user-section {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(24rpx);
+    -webkit-backdrop-filter: blur(24rpx);
+    border-radius: 32rpx;
+    padding: 36rpx 32rpx;
     display: flex;
     align-items: center;
-    gap: 20rpx; /* 减小头像与文字间距 */
-    flex: 1;
-    min-width: 0; /* 允许子元素在必要时收缩，配合 nowrap */
-
-    .avatar-wrapper {
-      flex-shrink: 0; /* 头像不收缩 */
-      width: 90rpx; /* 稍微缩小头像 */
-      height: 90rpx;
-      background: #ffffff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border: 4rpx solid #ffffff;
-      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-
-      .avatar {
-        width: 80%; /* 头像图片稍微缩小，露出白色背景感 */
-        height: 80%;
-        opacity: 0.5; /* 未登录状态头像半透明 */
-        filter: grayscale(100%); /* 未登录状态灰度 */
-      }
-    }
-
-    .text-content {
-      display: flex;
-      flex-direction: column;
-      gap: 10rpx;
-
-      .user-title {
-        font-size: 34rpx; /* 增大标题 */
-        color: #1E293B;
-        font-weight: 800;
-        letter-spacing: 1rpx;
-        white-space: nowrap; /* 防止标题换行 */
-      }
-
-      .user-subtitle {
-        font-size: 24rpx;
-        color: #64748B;
-        font-weight: 500;
-        line-height: 1.4;
-        white-space: nowrap; /* 防止副标题换行 */
-      }
-    }
-  }
-
-  .auth-btn {
-    flex-shrink: 0; /* 确保按钮不收缩 */
-    background: linear-gradient(135deg, #F59E0B, #FBBF24); /* 柠檬橙渐变，呼应主题 */
-    padding: 16rpx 36rpx;
-    border-radius: 40rpx;
-    box-shadow: 0 8rpx 20rpx rgba(245, 158, 11, 0.2);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1rpx solid rgba(255, 255, 255, 0.2);
-
-    text {
-      color: #ffffff;
-      font-size: 26rpx;
-      font-weight: 800;
-      letter-spacing: 1rpx;
-      text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
-    }
-
-    &:active {
-      transform: scale(0.94) translateY(2rpx);
-      box-shadow: 0 4rpx 10rpx rgba(245, 158, 11, 0.15);
-      filter: brightness(1.05);
-    }
-  }
-}
-
-  .logged-in-card {
-  background: rgba(255, 255, 255, 0.7); /* 略微增加透明度 */
-  backdrop-filter: blur(24rpx); /* 增强模糊 */
-  -webkit-backdrop-filter: blur(24rpx);
-  border-radius: 32rpx;
-  box-shadow: 
-    0 10rpx 40rpx rgba(0, 0, 0, 0.04),
-    inset 0 0 0 1rpx rgba(255, 255, 255, 0.4); /* 内部柔和边框 */
-  border: none; /* 使用内阴影代替边框更显精致 */
-  overflow: hidden;
-
-  .user-main-info {
-    padding: 32rpx 28rpx; /* 稍微减小内边距，释放横向空间 */
-    display: flex;
     justify-content: space-between;
-    align-items: center;
+    box-shadow: 
+      0 10rpx 40rpx rgba(0, 0, 0, 0.04),
+      inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
+    border: none;
+    position: relative;
+    overflow: hidden;
 
-    .left-section {
+    /* 装饰性光晕 */
+    &::before {
+      content: '';
+      position: absolute;
+      top: -30rpx;
+      right: -30rpx;
+      width: 100rpx;
+      height: 100rpx;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .user-section {
       display: flex;
       align-items: center;
-      gap: 20rpx; /* 减小头像与文字的间距 */
+      gap: 24rpx;
       flex: 1;
-      min-width: 0; /* 允许内部元素缩放 */
+      min-width: 0;
 
-      .user-avatar {
-        flex-shrink: 0; /* 头像不收缩 */
-        width: 100rpx; /* 稍微缩小头像 */
-        height: 100rpx;
+      .avatar-wrapper {
+        flex-shrink: 0;
+        width: 88rpx;
+        height: 88rpx;
+        background: linear-gradient(135deg, #F1F5F9, #E2E8F0);
         border-radius: 50%;
-        border: 4rpx solid #ffffff;
-        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 3rpx solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+
+        .avatar {
+          width: 70%;
+          height: 70%;
+          opacity: 0.4;
+          filter: grayscale(100%);
+        }
       }
 
-      .name-level-section {
+      .text-content {
         display: flex;
         flex-direction: column;
-        gap: 8rpx; /* 减小行间距 */
+        gap: 8rpx;
+
+        .user-title {
+          font-size: 32rpx;
+          color: #1E293B;
+          font-weight: 800;
+          letter-spacing: 0.5rpx;
+          white-space: nowrap;
+        }
+
+        .user-subtitle {
+          font-size: 24rpx;
+          color: #94A3B8;
+          font-weight: 500;
+          line-height: 1.4;
+          white-space: nowrap;
+        }
+      }
+    }
+
+    .auth-btn {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #3B82F6, #60A5FA);
+      padding: 18rpx 32rpx;
+      border-radius: 32rpx;
+      box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1rpx solid rgba(255, 255, 255, 0.3);
+
+      text {
+        color: #ffffff;
+        font-size: 26rpx;
+        font-weight: 600;
+        letter-spacing: 0.5rpx;
+      }
+
+      &:active {
+        transform: scale(0.96);
+        box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.25);
+      }
+    }
+  }
+
+  .logged-in-card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(24rpx);
+    -webkit-backdrop-filter: blur(24rpx);
+    border-radius: 32rpx;
+    box-shadow: 
+      0 10rpx 40rpx rgba(0, 0, 0, 0.04),
+      inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
+    border: none;
+    overflow: hidden;
+    position: relative;
+
+    /* 装饰性渐变 */
+    &::before {
+      content: '';
+      position: absolute;
+      top: -40rpx;
+      right: -40rpx;
+      width: 140rpx;
+      height: 140rpx;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .user-main-info {
+      padding: 32rpx 28rpx;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+
+      .left-section {
+        display: flex;
+        align-items: center;
+        gap: 24rpx;
         flex: 1;
         min-width: 0;
 
-        .name-row {
-          display: flex;
-          align-items: center;
-          gap: 12rpx;
-          white-space: nowrap; /* 昵称行也不换行 */
-
-          .nickname {
-            font-size: 32rpx; /* 微调昵称大小 */
-            font-weight: 800;
-            color: #1E293B;
-            letter-spacing: 0.5rpx;
-            overflow: hidden;
-            text-overflow: ellipsis; /* 昵称过长时显示省略号 */
-          }
-
-          .level-badge {
-            padding: 4rpx 16rpx;
-            border-radius: 20rpx;
-            font-size: 18rpx;
-            font-weight: 700;
-            line-height: 1.4;
-            box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
-            white-space: nowrap;
-          }
+        .user-avatar {
+          flex-shrink: 0;
+          width: 96rpx;
+          height: 96rpx;
+          border-radius: 50%;
+          border: 3rpx solid rgba(255, 255, 255, 0.8);
+          box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
+          background: linear-gradient(135deg, #F1F5F9, #E2E8F0);
+          padding: 3rpx;
         }
 
-        .achievement-tags {
+        .name-level-section {
           display: flex;
-          align-items: center;
-          margin-top: 8rpx;
-          white-space: nowrap;
-          width: 100%;
-          overflow: hidden;
+          flex-direction: column;
+          gap: 10rpx;
+          flex: 1;
+          min-width: 0;
 
-          .tag-item {
+          .name-row {
             display: flex;
             align-items: center;
-            font-size: 22rpx;
-            line-height: 1;
-            flex-shrink: 0;
+            min-width: 0;
+            margin-bottom: 4rpx;
 
-            .label {
-              color: #64748B; /* 中性灰色，用于描述文字 */
-              font-weight: 500;
-            }
+            .nickname-wrapper {
+              position: relative;
+              display: inline-flex;
+              align-items: center;
+              max-width: 100%;
 
-            .value {
-              font-weight: 500; /* 统一字重，不额外加粗 */
-              margin: 0 4rpx; /* 数字与文字间距 */
-              font-family: 'DIN Alternate', -apple-system, sans-serif;
+              .nickname {
+                font-size: 30rpx;
+                font-weight: 800;
+                color: #1E293B;
+                letter-spacing: 0.5rpx;
+                max-width: 220rpx;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                padding-right: 8rpx;
+              }
+
+              .level-badge {
+                position: absolute;
+                top: -8rpx;
+                left: calc(100% - 4rpx);
+                padding: 3rpx 10rpx;
+                border-radius: 10rpx;
+                font-size: 16rpx;
+                font-weight: 700;
+                line-height: 1.2;
+                box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+                white-space: nowrap;
+                border: 1rpx solid rgba(255, 255, 255, 0.4);
+                transform: scale(0.85);
+                transform-origin: left center;
+              }
             }
           }
 
-          .tag-divider {
-            font-size: 16rpx; /* 竖线通常比点高，稍微缩小字号 */
-            color: #CBD5E1;
-            margin: 0 10rpx;
-            flex-shrink: 0;
-            opacity: 0.6; /* 降低竖线的视觉强度 */
+          .achievement-tags {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            overflow: hidden;
+            background: rgba(241, 245, 249, 0.6);
+            border-radius: 16rpx;
+            padding: 6rpx 12rpx;
+            width: fit-content;
+            max-width: 100%;
+
+            .tag-item {
+              display: flex;
+              align-items: center;
+              font-size: 20rpx;
+              line-height: 1;
+              flex-shrink: 0;
+
+              .label {
+                color: #94A3B8;
+                font-weight: 500;
+              }
+
+              .value {
+                font-weight: 700;
+                margin: 0 4rpx;
+                font-family: 'DIN Alternate', -apple-system, sans-serif;
+              }
+            }
+
+            .tag-divider {
+              font-size: 12rpx;
+              color: #CBD5E1;
+              margin: 0 10rpx;
+              flex-shrink: 0;
+            }
           }
         }
       }
-    }
 
-    .right-stats {
-      display: flex;
-      gap: 40rpx;
-
-      .stat-item {
+      .right-stats {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6rpx;
+        gap: 24rpx;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 20rpx;
+        padding: 14rpx 20rpx;
+        border: 1rpx solid rgba(255, 255, 255, 0.5);
+        flex-shrink: 0;
 
-        .stat-value {
-              font-size: 38rpx;
-              font-weight: 900;
-              color: #1E293B;
-              font-family: 'DIN Alternate', -apple-system, sans-serif;
-            }
+        .stat-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4rpx;
+          min-width: 70rpx;
 
-        .stat-label {
-          font-size: 22rpx;
-          color: #64748B; /* 灰石板色 */
-          font-weight: 500;
+          .stat-value {
+            font-size: 40rpx;
+            font-weight: 800;
+            color: #1E293B;
+            font-family: 'DIN Alternate', -apple-system, sans-serif;
+          }
+
+          .stat-label {
+            font-size: 22rpx;
+            color: #64748B;
+            font-weight: 500;
+          }
         }
       }
     }
@@ -952,9 +1303,689 @@ onShow(() => {
   }
 }
 
-.content {
-  padding: 0 30rpx;
+/* 邀请返利模块 */
+.invite-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24rpx);
+  -webkit-backdrop-filter: blur(24rpx);
+  border-radius: 32rpx;
+  padding: 32rpx;
+  box-shadow: 
+    0 10rpx 40rpx rgba(0, 0, 0, 0.04),
+    inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
   position: relative;
-  z-index: 10;
+  overflow: hidden;
+  border: none;
+
+  /* 装饰性渐变背景 */
+  &::before {
+    content: '';
+    position: absolute;
+    right: -40rpx;
+    top: -40rpx;
+    width: 180rpx;
+    height: 180rpx;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: -20rpx;
+    bottom: -20rpx;
+    width: 100rpx;
+    height: 100rpx;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .invite-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+
+    .invite-badge {
+      display: inline-flex;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(37, 99, 235, 0.08));
+      border-radius: 24rpx;
+      padding: 8rpx 18rpx;
+      margin-bottom: 16rpx;
+      border: 1rpx solid rgba(59, 130, 246, 0.15);
+
+      .badge-icon {
+        font-size: 20rpx;
+        margin-right: 8rpx;
+      }
+
+      .badge-text {
+        font-size: 20rpx;
+        font-weight: 700;
+        color: #2563EB;
+        letter-spacing: 1rpx;
+      }
+    }
+
+    .invite-title {
+      font-size: 32rpx;
+      font-weight: 800;
+      color: #1E293B;
+      margin-bottom: 10rpx;
+      line-height: 1.3;
+      letter-spacing: 0.5rpx;
+    }
+
+    .invite-desc {
+      font-size: 24rpx;
+      color: #64748B;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+  }
+
+  .invite-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+    border-radius: 40rpx;
+    padding: 18rpx 28rpx;
+    margin-left: 24rpx;
+    box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.35);
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+    border: 1rpx solid rgba(255, 255, 255, 0.3);
+    /* 呼吸动画 */
+    animation: invite-breathing 2.5s ease-in-out infinite;
+
+    &:active {
+      transform: scale(0.96);
+      box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.25);
+      animation: none;
+    }
+
+    text {
+      font-size: 26rpx;
+      font-weight: 600;
+      color: #ffffff;
+      margin-right: 4rpx;
+      text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+/* 立即邀请按钮呼吸动画 */
+@keyframes invite-breathing {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.35);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 12rpx 32rpx rgba(59, 130, 246, 0.5);
+  }
+}
+
+/* 合作伙伴模块 */
+.partners-section {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24rpx;
+    padding: 0 8rpx;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12rpx;
+
+      .header-icon {
+        width: 56rpx;
+        height: 56rpx;
+        background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+        border-radius: 16rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.15);
+      }
+
+      .section-title {
+        font-size: 32rpx;
+        font-weight: 800;
+        color: #1E293B;
+        letter-spacing: 0.5rpx;
+      }
+    }
+
+    .section-subtitle {
+      font-size: 24rpx;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+  }
+
+  /* 合作伙伴三列布局 */
+  .partners-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20rpx;
+    margin-bottom: 24rpx;
+
+    .partner-item {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(24rpx);
+      -webkit-backdrop-filter: blur(24rpx);
+      border-radius: 28rpx;
+      padding: 20rpx 12rpx;
+      box-shadow: 
+        0 8rpx 32rpx rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      .partner-logo-large {
+        width: 160rpx;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12rpx;
+        
+        image {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      .partner-item-name {
+        font-size: 24rpx;
+        font-weight: 700;
+        color: #1E293B;
+        text-align: center;
+        margin-bottom: 8rpx;
+      }
+
+      .partner-item-tag {
+        font-size: 18rpx;
+        font-weight: 500;
+        padding: 4rpx 12rpx;
+        border-radius: 16rpx;
+
+        &.brand {
+          color: #3B82F6;
+          background: rgba(59, 130, 246, 0.12);
+        }
+
+        &.pay {
+          color: #F59E0B;
+          background: rgba(245, 158, 11, 0.12);
+        }
+
+        &.bank {
+          color: #10B981;
+          background: rgba(16, 185, 129, 0.12);
+        }
+      }
+    }
+  }
+
+  /* 合作保障 */
+  .partners-guarantee {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(24rpx);
+    border-radius: 24rpx;
+    padding: 24rpx;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
+
+    .guarantee-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12rpx;
+
+      .guarantee-icon {
+        width: 56rpx;
+        height: 56rpx;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+      }
+
+      .guarantee-text {
+        font-size: 20rpx;
+        color: #64748B;
+        font-weight: 500;
+      }
+    }
+
+    .guarantee-divider {
+      width: 1rpx;
+      height: 60rpx;
+      background: rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+/* 页脚 */
+/* 联系我们模块 */
+/* 联系我们模块 */
+.contact-section {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24rpx;
+    padding: 0 8rpx;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12rpx;
+
+      .header-icon {
+        width: 56rpx;
+        height: 56rpx;
+        background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+        border-radius: 16rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.15);
+      }
+
+      .section-title {
+        font-size: 32rpx;
+        font-weight: 800;
+        color: #1E293B;
+        letter-spacing: 0.5rpx;
+      }
+    }
+
+    .section-subtitle {
+      font-size: 24rpx;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+  }
+
+  .contact-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20rpx;
+
+    /* 微信卡片 */
+    .contact-card-wechat {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(24rpx);
+      border-radius: 28rpx;
+      padding: 32rpx;
+      box-shadow: 
+        0 8rpx 32rpx rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 24rpx;
+      transition: all 0.2s ease;
+
+      &:active {
+        transform: scale(0.98);
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .wechat-icon-wrapper {
+        width: 80rpx;
+        height: 80rpx;
+        background: rgba(7, 193, 96, 0.1);
+        border-radius: 20rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .wechat-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8rpx;
+
+        .wechat-label {
+          font-size: 24rpx;
+          color: #94A3B8;
+          font-weight: 500;
+        }
+
+        .wechat-value {
+          font-size: 32rpx;
+          font-weight: 700;
+          color: #1E293B;
+          letter-spacing: 1rpx;
+        }
+      }
+
+      .wechat-action {
+        padding: 12rpx 24rpx;
+        background: rgba(7, 193, 96, 0.1);
+        border-radius: 24rpx;
+
+        text {
+          font-size: 24rpx;
+          color: #07C160;
+          font-weight: 600;
+        }
+      }
+    }
+
+    /* 工作时间卡片 */
+    .contact-card-time {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(24rpx);
+      border-radius: 28rpx;
+      padding: 32rpx;
+      box-shadow: 
+        0 8rpx 32rpx rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 24rpx;
+
+      .time-icon-wrapper {
+        width: 80rpx;
+        height: 80rpx;
+        background: rgba(245, 158, 11, 0.1);
+        border-radius: 20rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .time-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8rpx;
+
+        .time-label {
+          font-size: 24rpx;
+          color: #94A3B8;
+          font-weight: 500;
+        }
+
+        .time-value {
+          font-size: 28rpx;
+          font-weight: 600;
+          color: #1E293B;
+        }
+      }
+
+      .time-badge {
+        padding: 8rpx 16rpx;
+        background: rgba(245, 158, 11, 0.1);
+        border-radius: 20rpx;
+        font-size: 20rpx;
+        color: #F59E0B;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+.page-footer {
+  padding: 40rpx 0 200rpx; /* 底部 200rpx 防止被 TabBar 挡住（TabBar 100rpx + 安全区）*/
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+
+  .footer-divider {
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+    margin-bottom: 10rpx;
+
+    .divider-line {
+      width: 80rpx;
+      height: 2rpx;
+      background: linear-gradient(90deg, transparent, #CBD5E1, transparent);
+    }
+
+    .divider-dot {
+      width: 8rpx;
+      height: 8rpx;
+      background: #CBD5E1;
+      border-radius: 50%;
+    }
+  }
+
+  .footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8rpx;
+
+    .footer-brand {
+      font-size: 32rpx;
+      font-weight: 800;
+      color: #1E293B;
+      letter-spacing: 2rpx;
+    }
+
+    .footer-slogan {
+      font-size: 24rpx;
+      color: #64748B;
+      font-weight: 500;
+    }
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 24rpx;
+    margin-top: 10rpx;
+
+    .footer-link {
+      font-size: 22rpx;
+      color: #64748B;
+      font-weight: 500;
+      transition: color 0.2s;
+
+      &:active {
+        color: #3B82F6;
+      }
+    }
+
+    .footer-divider-text {
+      font-size: 20rpx;
+      color: #CBD5E1;
+    }
+  }
+
+  .footer-copyright {
+    margin-top: 10rpx;
+    
+    text {
+      font-size: 20rpx;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+  }
+}
+
+/* 赚积分模块 */
+.earn-points-section {
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24rpx;
+    padding: 0 8rpx;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12rpx;
+
+      .header-icon {
+        width: 56rpx;
+        height: 56rpx;
+        background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+        border-radius: 16rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.15);
+      }
+
+      .section-title {
+        font-size: 32rpx;
+        font-weight: 800;
+        color: #1E293B;
+        letter-spacing: 0.5rpx;
+      }
+    }
+
+    .section-subtitle {
+      font-size: 24rpx;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+  }
+
+  .earn-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24rpx;
+
+    .earn-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(24rpx);
+      -webkit-backdrop-filter: blur(24rpx);
+      border-radius: 28rpx;
+      padding: 28rpx;
+      box-shadow: 
+        0 8rpx 32rpx rgba(0, 0, 0, 0.04),
+        inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
+      position: relative;
+      overflow: hidden;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16rpx;
+      transition: all 0.3s ease;
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      /* 背景装饰图标 */
+      .card-bg-icon {
+        position: absolute;
+        right: -10rpx;
+        top: -10rpx;
+        z-index: 0;
+        opacity: 0.6;
+      }
+
+      .earn-icon-wrapper {
+        position: relative;
+        z-index: 1;
+
+        .earn-icon {
+          width: 72rpx;
+          height: 72rpx;
+          background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+          border-radius: 18rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.2);
+
+          &.orange {
+            background: linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%);
+            box-shadow: 0 4rpx 16rpx rgba(245, 158, 11, 0.2);
+          }
+        }
+      }
+
+      .earn-info {
+        position: relative;
+        z-index: 1;
+
+        .earn-title {
+          font-size: 30rpx;
+          font-weight: 800;
+          color: #1E293B;
+          margin-bottom: 8rpx;
+          display: block;
+        }
+
+        .earn-desc {
+          font-size: 22rpx;
+          color: #64748B;
+          line-height: 1.4;
+          display: block;
+          font-weight: 500;
+        }
+      }
+
+      .earn-arrow {
+        position: absolute;
+        right: 20rpx;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1;
+      }
+
+      /* 线下卡片特殊样式 */
+      &.offline {
+        &::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          height: 4rpx;
+          background: linear-gradient(90deg, #3B82F6, transparent);
+          border-radius: 0 0 28rpx 28rpx;
+        }
+      }
+
+      /* 线上卡片特殊样式 */
+      &.online {
+        &::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          height: 4rpx;
+          background: linear-gradient(90deg, #F59E0B, transparent);
+          border-radius: 0 0 28rpx 28rpx;
+        }
+      }
+    }
+  }
+
 }
 </style>

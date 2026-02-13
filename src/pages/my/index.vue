@@ -37,6 +37,22 @@
         </view>
       </view>
 
+      <!-- 邀请返利模块 -->
+      <view class="invite-card">
+        <view class="invite-content">
+          <view class="invite-badge">
+            <text class="badge-icon">⚡</text>
+            <text class="badge-text">LIMITED OFFER</text>
+          </view>
+          <view class="invite-title">邀请邻居，永久返利</view>
+          <view class="invite-desc">新用户首单后，您将永久获得其订单2%的积分奖励。</view>
+        </view>
+        <view class="invite-btn" @click="handleInvite">
+          <text>立即邀请</text>
+          <t-icon name="chevron-right" size="28rpx" color="#ffffff" />
+        </view>
+      </view>
+
       <!-- 菜单列表 -->
       <view class="menu-list">
         <t-cell-group theme="card">
@@ -61,7 +77,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import CustomTabBar from '@/components/CustomTabBar.vue';
-import { onShow } from '@dcloudio/uni-app';
+import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
 
 const activeTab = ref<'home' | 'my'>('my');
 
@@ -71,6 +87,19 @@ const menuButtonInfo = ref({ top: 0, height: 0 });
 onShow(() => {
   activeTab.value = 'my';
   uni.hideTabBar();
+});
+
+// 下拉刷新
+onPullDownRefresh(() => {
+  // 模拟数据刷新
+  setTimeout(() => {
+    uni.stopPullDownRefresh();
+    uni.showToast({
+      title: '刷新成功',
+      icon: 'success',
+      duration: 800
+    });
+  }, 800);
 });
 
 onMounted(() => {
@@ -121,6 +150,10 @@ const handleLogout = () => {
       }
     }
   });
+};
+
+const handleInvite = () => {
+  uni.showToast({ title: '邀请功能开发中', icon: 'none' });
 };
 </script>
 
@@ -229,6 +262,87 @@ const handleLogout = () => {
   :deep(.t-cell-group--card) {
     margin: 0;
     border-radius: 32rpx;
+  }
+}
+
+.invite-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    right: -20rpx;
+    bottom: -20rpx;
+    width: 120rpx;
+    height: 120rpx;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%);
+    border-radius: 50%;
+  }
+
+  .invite-content {
+    flex: 1;
+
+    .invite-badge {
+      display: inline-flex;
+      align-items: center;
+      background: #EBF5FF;
+      border-radius: 24rpx;
+      padding: 6rpx 16rpx;
+      margin-bottom: 16rpx;
+
+      .badge-icon {
+        font-size: 20rpx;
+        margin-right: 8rpx;
+      }
+
+      .badge-text {
+        font-size: 22rpx;
+        font-weight: 600;
+        color: #3B82F6;
+        letter-spacing: 1rpx;
+      }
+    }
+
+    .invite-title {
+      font-size: 34rpx;
+      font-weight: bold;
+      color: #1E293B;
+      margin-bottom: 12rpx;
+      line-height: 1.4;
+    }
+
+    .invite-desc {
+      font-size: 26rpx;
+      color: #94A3B8;
+      line-height: 1.5;
+    }
+  }
+
+  .invite-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    border-radius: 40rpx;
+    padding: 20rpx 32rpx;
+    margin-left: 24rpx;
+    box-shadow: 0 8rpx 20rpx rgba(59, 130, 246, 0.3);
+
+    text {
+      font-size: 28rpx;
+      font-weight: 500;
+      color: #ffffff;
+      margin-right: 4rpx;
+    }
   }
 }
 

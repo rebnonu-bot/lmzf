@@ -1,4 +1,15 @@
 <template>
+  <!-- #ifdef MP-WEIXIN -->
+  <view class="location-header" :style="headerStyle">
+    <view class="brand-location mp-weixin" :style="{ top: brandLocationTop }" @click="goToCitySelect">
+      <text class="brand-text">邻檬智付</text>
+      <text class="dot">·</text>
+      <text class="city-text">{{ displayCityName }}</text>
+      <t-icon name="chevron-down" size="32rpx" color="#fff" class="arrow-icon" />
+    </view>
+  </view>
+  <!-- #endif -->
+  <!-- #ifndef MP-WEIXIN -->
   <view class="location-header" :style="headerStyle">
     <view class="brand-location" @click="goToCitySelect">
       <text class="brand-text">邻檬智付</text>
@@ -7,30 +18,34 @@
       <t-icon name="chevron-down" size="32rpx" color="#fff" class="arrow-icon" />
     </view>
   </view>
+  <!-- #endif -->
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
-const statusBarHeight = ref(0);
 const menuButtonInfo = ref({ top: 0, height: 0 });
 
 onMounted(() => {
-  // 获取系统信息
-  const systemInfo = uni.getSystemInfoSync();
-  statusBarHeight.value = systemInfo.statusBarHeight || 0;
-  
   // #ifdef MP-WEIXIN
-  // 获取胶囊按钮位置
+  // 获取胶囊按钮位置，用于对齐
   const menuButton = uni.getMenuButtonBoundingClientRect();
   menuButtonInfo.value = menuButton;
+  
+  // 计算文字位置
+  // 文字应该与胶囊按钮垂直居中对齐
+  const centerY = menuButton.top + menuButton.height / 2;
+  const textHeight = 20; // 文字大约高度
+  const textTop = centerY - textHeight / 2;
+  brandLocationTop.value = `${textTop}px`;
   // #endif
-
+  
   uni.$on('updateCity', handleCityUpdate);
 });
 
 const currentCity = ref('赣州');
 const isLocated = ref(false);
+const brandLocationTop = ref('60px'); // 小程序端文字位置的默认值
 
 const displayCityName = computed(() => {
   if (isLocated.value) {
@@ -43,25 +58,33 @@ const displayCityName = computed(() => {
 // 计算头部样式
 const headerStyle = computed(() => {
   // #ifdef MP-WEIXIN
-  // 小程序端，根据胶囊按钮位置动态计算，并增加上下间距让视觉更舒展
-  const top = menuButtonInfo.value.top;
-  const height = menuButtonInfo.value.height;
+  // 小程序端：高度包含状态栏，内容定位
+  const systemInfo = uni.getSystemInfoSync();
+  const statusBarHeight = systemInfo.statusBarHeight || 44;
+  
   return {
-    paddingTop: `${top - 6}px`,
-    paddingBottom: '12px',
-    height: `${height + 12}px`,
-    display: 'flex',
-    alignItems: 'center'
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: `${statusBarHeight + 44}px`, // 状态栏 + 44px内容区
+    zIndex: 100
   };
   // #endif
-
+  
   // #ifndef MP-WEIXIN
-  // 非小程序端，增加固定高度
+  // H5 端：固定高度
   return {
-    paddingTop: `${statusBarHeight.value}px`,
-    height: '56px',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '100rpx',
+    paddingLeft: '32rpx',
+    paddingRight: '32rpx',
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    zIndex: 100
   };
   // #endif
 });
@@ -89,11 +112,31 @@ onUnmounted(() => {
 .location-header {
   position: relative;
   z-index: 100;
+  
+  /* 小程序端样式 */
+  /* #ifdef MP-WEIXIN */
+  .brand-location.mp-weixin {
+    position: absolute;
+    left: 32rpx;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    /* top 在 onMounted 中通过 style 动态设置 */
+    
+    &:active {
+      opacity: 0.7;
+    }
+  }
+  /* #endif */
+  
+  /* H5 端样式 */
+  /* #ifndef MP-WEIXIN */
   display: flex;
   align-items: center;
   padding-left: 32rpx;
   padding-right: 32rpx;
-  box-sizing: content-box; /* 确保 padding-top 不影响 height */
+  /* #endif */
   
   .brand-location {
     display: flex;
@@ -102,7 +145,7 @@ onUnmounted(() => {
     transition: opacity 0.2s;
     
     &:active {
-      opacity: 0.7; /* 点击文字时有微弱反馈 */
+      opacity: 0.7;
     }
     
     .brand-text {
@@ -120,7 +163,7 @@ onUnmounted(() => {
     }
 
     .city-text {
-      font-size: 28rpx; /* 调小城市文字大小 */
+      font-size: 28rpx;
       font-weight: 600;
       color: #ffffff;
       letter-spacing: 0.5rpx;
