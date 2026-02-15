@@ -1,5 +1,172 @@
 # 更新日志 (Changelog)
 
+## [1.2.0] - 2026-02-15
+
+### 代码质量优化
+
+#### Bug 修复
+- **TabBar 配置冲突** (`src/pages.json`)
+  - 修复 `custom: false` 与代码中自定义 TabBar 逻辑不一致的问题
+  - 改为 `custom: true`，与 `uni.hideTabBar()` 配合使用
+
+- **清理未使用导入** (`src/App.vue`)
+  - 移除未使用的 `LocationHeader` 组件导入
+
+- **版本号同步** (`src/config/index.ts`)
+  - 同步 `config.app.version` (0.2.0 → 1.1.1) 与 `package.json` 一致
+
+#### 类型定义完善
+- **UserInfo 接口扩展** (`src/types/api.d.ts`)
+  - 新增 `UserLevel` 类型: `'copper' | 'silver' | 'gold'`
+  - 补充业务字段：`level`, `coins`, `coupons`, `joinDays`, `inviteCount`, `coinLabel`
+
+#### Mock 数据管理
+- **配置化 Mock 数据** (`src/config/mock.config.ts`)
+  - 提取首页硬编码数据到配置文件
+  - 统一管理中心：用户信息、等级配置、合作伙伴、客服信息
+  - 支持类型安全的引用
+
+- **页面代码优化**
+  - `src/pages/home/index.vue`: 移除硬编码，使用配置引用
+  - `src/pages/my/index.vue`: 移除硬编码，使用配置引用
+
+#### 全局错误处理
+- **App 生命周期增强** (`src/App.vue`)
+  - 添加 `onError`: 全局 JavaScript 错误捕获与上报
+  - 添加 `onUnhandledRejection`: 未处理 Promise 拒绝捕获
+  - 添加 `onPageNotFound`: 404 页面自动重定向到首页
+
+### Mock 系统重构
+
+#### 核心架构升级 (`src/mock/core.ts`)
+- **RESTful 路径支持**
+  - 支持 `:param` 风格的动态路径参数
+  - 自动解析路径参数到 `ctx.params`
+  
+- **HTTP 方法区分**
+  - 支持按 `GET/POST/PUT/DELETE/PATCH` 分别注册
+  - 相同路径不同方法可绑定不同处理器
+
+- **动态延迟**
+  - 支持固定延迟: `delay: 500`
+  - 支持随机延迟: `delay: [100, 500]`
+  - 默认延迟: 300ms
+
+- **RESTful 资源一键注册**
+  ```typescript
+  registerResource('/api/users', {
+    index: () => ({ list: [] }),     // GET /api/users
+    show: (ctx) => ({ id: ctx.params.id }),  // GET /api/users/:id
+    create: (ctx) => ctx.body,       // POST /api/users
+    update: (ctx) => ctx.body,       // PUT /api/users/:id
+    destroy: () => ({ success: true }) // DELETE /api/users/:id
+  })
+  ```
+
+#### 业务 Mock 数据 (`src/mock/index.ts`)
+- 首页相关接口：`/api/points`, `/api/home`
+- 用户认证接口：`/auth/login`, `/auth/refresh`, `/auth/logout`
+- RESTful 用户资源：`/api/users`
+- 门店接口：`/api/stores`, `/api/stores/:id`
+
+### 单元测试体系
+
+#### 测试框架配置 (`vitest.config.ts`)
+- 集成 Vitest + @vue/test-utils + happy-dom
+- 支持 Vue 3 组件测试
+- 覆盖率报告配置 (v8 provider)
+
+#### 测试用例覆盖
+- **缓存工具测试** (`src/__tests__/utils/cache.spec.ts`)
+  - `CacheManager` 内存缓存测试
+  - `PersistentCache` Storage 缓存测试
+  - `getOrSet` 封装方法测试
+
+- **组合式函数测试** (`src/__tests__/composables/useLoading.spec.ts`)
+  - `useLoading`: 加载状态管理
+  - `useRefresh`: 刷新状态管理
+  - `useLoadMore`: 加载更多状态管理
+
+- **组件测试** (`src/__tests__/components/CustomTabBar.spec.ts`)
+  - Tab 切换逻辑
+  - 扫码按钮点击
+  - Props 响应式更新
+
+- **Mock 核心测试** (`src/__tests__/mock/mock.spec.ts`)
+  - 路径参数匹配
+  - HTTP 方法区分
+  - 动态延迟生成
+  - RESTful 资源注册
+
+#### 测试脚本
+```bash
+npm test           # 开发模式运行测试
+npm run test:coverage  # 生成覆盖率报告
+```
+
+### 性能优化
+
+#### 图片懒加载指令 (`src/directives/lazyLoad.ts`)
+- **IntersectionObserver 实现**
+  - 自动监听元素进入视口
+  - 支持 `rootMargin` 提前加载
+  
+- **降级方案**
+  - 原生 `loading="lazy"` 作为兜底
+  - 占位图 + 错误图机制
+
+- **图片缓存**
+  - 已加载图片自动缓存
+  - 避免重复加载
+
+- **批量预加载 API**
+  ```typescript
+  import { preloadImages } from '@/directives'
+  await preloadImages(['/img1.png', '/img2.png'])
+  ```
+
+#### 虚拟列表组件 (`src/components/VirtualList.vue`)
+- **大数据渲染优化**
+  - 只渲染可视区域 + 缓冲区
+  - 支持海量数据流畅滚动
+  
+- **功能特性**
+  - 动态高度计算（支持 rpx）
+  - 自动滚动到底部加载更多
+  - 滚动到指定索引 API
+
+- **使用示例**
+  ```vue
+  <VirtualList
+    :data="longList"
+    :item-height="100"
+    container-height="800rpx"
+    @scrolltolower="loadMore"
+  >
+    <template #default="{ item }">
+      <ItemComponent :data="item" />
+    </template>
+  </VirtualList>
+  ```
+
+#### 全局样式 (`src/App.vue`)
+- 添加懒加载过渡动画样式
+  - `.lazy-loading`: 加载中透明度变化
+  - `.lazy-loaded`: 加载完成过渡
+  - `.lazy-error`: 加载失败灰度显示
+
+### 工程化增强
+
+#### 指令系统 (`src/directives/index.ts`)
+- 统一指令注册入口
+- 全局指令自动注册到 Vue App
+- 支持 `v-lazy` 懒加载指令
+
+#### 主入口更新 (`src/main.ts`)
+- 集成指令注册逻辑
+
+---
+
 ## [1.1.1] - 2026-02-15
 
 ### 架构优化

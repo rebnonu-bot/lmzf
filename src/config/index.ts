@@ -14,7 +14,7 @@ export const config = {
   // 应用信息
   app: {
     name: '邻檬智付',
-    version: '0.2.0',
+    version: '1.1.1',
     buildVersion: '20250215',
   },
   

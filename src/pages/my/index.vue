@@ -72,9 +72,10 @@
 import { ref } from 'vue';
 import CustomTabBar from '@/components/CustomTabBar.vue';
 import { onShow } from '@dcloudio/uni-app';
+import { myMockData, homeMockData } from '@/config/mock.config';
 
 const activeTab = ref<'home' | 'my'>('my');
-const version = ref('1.0.0');
+const version = ref(myMockData.version);
 
 onShow(() => {
   activeTab.value = 'my';
@@ -84,7 +85,7 @@ onShow(() => {
 // 复制客服微信
 const copyWechat = () => {
   uni.setClipboardData({
-    data: 'lingmeng2024',
+    data: homeMockData.contact.wechat,
     success: () => {
       uni.showToast({ title: '微信号已复制', icon: 'success' });
     }
@@ -94,7 +95,7 @@ const copyWechat = () => {
 // 拨打客服电话
 const makePhoneCall = () => {
   uni.makePhoneCall({
-    phoneNumber: '400-888-8888',
+    phoneNumber: homeMockData.contact.phone,
     fail: () => {
       console.log('用户取消拨打');
     }

@@ -338,6 +338,8 @@ import PageSkeleton from '@/components/PageSkeleton.vue';
 
 import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
 import { ref, onMounted, computed } from 'vue';
+import { homeMockData } from '@/config/mock.config';
+import type { UserLevel } from '@/types/api.d';
 
 // 加载状态
 const loading = ref(true);
@@ -350,41 +352,22 @@ const onScroll = (e: any) => {
 
 const activeTab = ref<'home' | 'my'>('home');
 const displayPoints = ref(0);
-const targetPoints = 12993;
+const targetPoints = homeMockData.targetPoints;
 
 // 模拟用户信息
 const userInfo = ref({
-    nickname: '梅菜扣肉',
-    avatar: '/static/avatar1.png',
-    level: 'gold', // copper: 铜牌, silver: 银牌, gold: 金牌
-    coins: 1250,
-    coinLabel: '柠檬币',
-    coupons: 3,
-    joinDays: 12,
-    inviteCount: 8
+    nickname: homeMockData.userInfo.nickname!,
+    avatar: homeMockData.userInfo.avatar!,
+    level: homeMockData.userInfo.level as UserLevel,
+    coins: homeMockData.userInfo.coins!,
+    coinLabel: homeMockData.userInfo.coinLabel!,
+    coupons: homeMockData.userInfo.coupons!,
+    joinDays: homeMockData.userInfo.joinDays!,
+    inviteCount: homeMockData.userInfo.inviteCount!
   });
 
   // 等级配置
-  const levelConfig = {
-    copper: {
-      name: '铜牌推广者',
-      bg: 'linear-gradient(135deg, #A16207, #78350F)',
-      color: '#FEF3C7',
-      tagColor: '#A16207'
-    },
-    silver: {
-      name: '银牌推广者',
-      bg: 'linear-gradient(135deg, #64748B, #334155)',
-      color: '#F1F5F9',
-      tagColor: '#64748B'
-    },
-    gold: {
-      name: '金牌推广者',
-      bg: 'linear-gradient(135deg, #F59E0B, #D97706)',
-      color: '#FFFBEB',
-      tagColor: '#D97706'
-    }
-  };
+  const levelConfig = homeMockData.levelConfig;
 
   const currentLevel = computed(() => levelConfig[userInfo.value.level] || levelConfig.copper);
 
@@ -431,7 +414,7 @@ const handleOnline = () => {
 // 复制客服微信
 const copyWechat = () => {
   uni.setClipboardData({
-    data: 'lingmeng2024',
+    data: homeMockData.contact.wechat,
     success: () => {
       uni.showToast({
         title: '微信号已复制',
@@ -455,14 +438,8 @@ const makePhoneCall = () => {
 };
 
 // 显示合作伙伴详情
-const showPartnerDetail = (partner: string) => {
-  const partnerInfo: Record<string, { name: string; desc: string }> = {
-    lmzj: { name: '邻檬智家', desc: '智慧社区服务提供商，致力于打造便民生活服务平台' },
-    allinpay: { name: '通联支付', desc: '拥有央行支付牌照，提供安全稳定的支付通道服务' },
-    psbc: { name: '邮储银行', desc: '国有大型商业银行，为资金提供托管保障' }
-  };
-  
-  const info = partnerInfo[partner];
+const showPartnerDetail = (partner: keyof typeof homeMockData.partners) => {
+  const info = homeMockData.partners[partner];
   if (info) {
     uni.showModal({
       title: info.name,

@@ -18,18 +18,20 @@
 | 层级 | 技术 |
 |------|------|
 | 前端框架 | Vue 3 + Composition API |
-| 跨平台方案 | UniApp 3.0 |
+| 跨平台方案 | UniApp 3.0 (3.0.0-4080420251103001) |
 | 构建工具 | Vite 5.2.8 |
 | 语言 | TypeScript 4.9 |
-| UI 组件库 | TDesign UniApp |
+| UI 组件库 | TDesign UniApp 0.7.1 |
 | 样式预处理器 | Less |
 | 路由 | UniApp 内置路由 |
 
 ### 支持平台
 - H5 (主要部署目标)
-- 微信小程序 (mp-weixin)
+- 微信小程序 (mp-weixin) - AppID: wx9713aa2e5d67f6bd
 - 支付宝小程序 (mp-alipay)
-- 其他小程序平台（百度、抖音、QQ等）
+- QQ小程序 (mp-qq) - AppID: 1112328122
+- 小红书小程序 (mp-xhs) - AppID: 69005f8c77e2b300015cb3aa
+- 其他小程序平台（百度、抖音等）
 
 ---
 
@@ -38,43 +40,77 @@
 ```
 lmzf/
 ├── src/
-│   ├── pages/                    # 页面目录
+│   ├── pages/                    # 主包页面（Tab 页）
 │   │   ├── home/index.vue        # 首页 - 积分展示、功能入口
 │   │   ├── my/index.vue          # 我的 - 个人中心
 │   │   ├── scan/index.vue        # 扫码 - 沉浸式扫一扫
-│   │   ├── city-select/index.vue # 城市选择
-│   │   ├── invite/poster.vue     # 邀请海报
-│   │   ├── stores/index.vue      # 门店列表
-│   │   ├── platforms/index.vue   # CPS 平台
-│   │   └── webview/index.vue     # 内置浏览器
+│   │   └── city-select/index.vue # 城市选择
+│   ├── package-invite/           # 邀请分包
+│   │   └── pages/invite/poster.vue
+│   ├── package-store/            # 门店分包
+│   │   └── pages/stores/index.vue
+│   ├── package-platform/         # CPS平台分包
+│   │   └── pages/platforms/index.vue
+│   ├── package-webview/          # WebView分包
+│   │   └── pages/webview/index.vue
 │   ├── components/               # 全局组件
-│   │   ├── CustomTabBar.vue      # 自定义底部导航
+│   │   ├── CustomTabBar.vue      # 自定义底部导航（中间凸起扫码按钮）
 │   │   ├── LocationHeader.vue    # 顶部定位组件
 │   │   ├── PageSkeleton.vue      # 骨架屏加载
-│   │   └── PageLoader.vue        # 全屏加载动画
+│   │   ├── PageLoader.vue        # 全屏加载动画
+│   │   ├── EmptyState.vue        # 空状态组件
+│   │   ├── ErrorBoundary.vue     # 错误边界组件
+│   │   └── SafeArea.vue          # 安全区适配
 │   ├── api/
-│   │   └── request.ts            # 请求封装
+│   │   └── request.ts            # HTTP请求封装（拦截器、错误处理）
+│   ├── stores/
+│   │   └── user.ts               # 用户状态管理（Pinia风格）
+│   ├── composables/              # Vue3 组合式函数
+│   │   ├── useLoading.ts         # 加载状态管理
+│   │   ├── useLocation.ts        # 定位相关
+│   │   ├── useStorage.ts         # 本地存储
+│   │   ├── useTracker.ts         # 埋点统计
+│   │   └── index.ts              # 统一导出
 │   ├── utils/
+│   │   ├── cache.ts              # 缓存管理（内存+Storage）
 │   │   ├── cityData.ts           # 城市数据
-│   │   └── eventBus.ts           # 事件总线
+│   │   ├── eventBus.ts           # 事件总线
+│   │   └── tracker.ts            # 埋点统计工具
+│   ├── constants/                # 常量定义
+│   │   ├── enums.ts              # 枚举常量
+│   │   └── index.ts              # 通用常量
+│   ├── types/                    # TypeScript类型定义
+│   │   ├── api.d.ts              # API相关类型
+│   │   ├── business.d.ts         # 业务类型
+│   │   ├── global.d.ts           # 全局类型扩展
+│   │   └── index.ts              # 统一导出
+│   ├── config/
+│   │   └── index.ts              # 多环境配置
 │   ├── mock/
-│   │   └── index.ts              # Mock 数据拦截
+│   │   └── index.ts              # Mock数据拦截
 │   ├── styles/
 │   │   ├── variable.less         # 全局样式变量
-│   │   └── uni.scss              # UniApp 全局样式
+│   │   └── uni.scss              # UniApp主题变量（支持暗黑模式）
 │   ├── static/                   # 静态资源
+│   │   └── fonts/t.ttf           # TDesign图标字体（本地）
+│   ├── App.vue                   # 应用根组件
 │   ├── main.ts                   # 应用入口
-│   ├── App.vue                   # 根组件
-│   ├── pages.json                # 页面配置
 │   ├── manifest.json             # 应用配置（含各平台配置）
-│   └── config.ts                 # 全局配置
-├── index.html                    # H5 入口
-├── vite.config.ts                # Vite 配置
-├── tsconfig.json                 # TypeScript 配置
+│   └── pages.json                # 页面配置（含分包配置）
+├── .github/workflows/             # GitHub Actions CI/CD
+│   ├── ci.yml                    # 主CI/CD流水线
+│   ├── pr-check.yml              # PR检查
+│   └── build-doc.yml             # 文档构建
+├── index.html                    # H5入口
+├── vite.config.ts                # Vite配置
+├── tsconfig.json                 # TypeScript配置
 ├── package.json                  # 依赖管理
-├── deploy.js                     # FTP 部署脚本
-├── MASTER.md                     # UI 设计规范
-└── CHANGELOG.md                  # 更新日志
+├── deploy.js                     # FTP部署脚本
+├── .eslintrc.cjs                 # ESLint配置
+├── .prettierrc                   # Prettier配置
+├── MASTER.md                     # UI设计规范
+├── CHANGELOG.md                  # 更新日志
+└── AGENTS.md                     # 本文件
 ```
 
 ---
@@ -85,20 +121,32 @@ lmzf/
 # 安装依赖（必须使用 --legacy-peer-deps）
 npm install --legacy-peer-deps
 
+# 初始化husky（Git钩子）
+npm run prepare
+
 # 开发服务器
 npm run dev           # 默认启动 H5 开发服务器
 npm run dev:h5        # H5 开发
 npm run dev:mp-weixin # 微信小程序开发
+npm run dev:mp-alipay # 支付宝小程序开发
 
 # 构建
 npm run build:h5        # 构建 H5 生产包 → dist/build/h5/
 npm run build:mp-weixin # 构建微信小程序 → dist/build/mp-weixin/
 
-# 部署
-npm run deploy          # 执行 deploy.js 部署到 FTP
+# 代码规范
+npm run lint          # ESLint检查并修复
+npm run format        # Prettier格式化
+npm run type-check    # TypeScript类型检查
 
-# 类型检查
-npm run type-check      # 运行 vue-tsc 检查
+# 部署
+npm run deploy        # 执行 deploy.js 部署到 FTP
+
+# CLI工具
+npm run new:page      # 创建新页面
+npm run new:component # 创建新组件
+npm run new:api       # 创建API模块
+npm run new:composable # 创建组合式函数
 ```
 
 ---
@@ -156,7 +204,7 @@ backdrop-filter: blur(24rpx);
 
 ## 代码风格规范
 
-### Vue 文件结构
+### Vue 单文件组件结构
 
 ```vue
 <template>
@@ -168,33 +216,35 @@ backdrop-filter: blur(24rpx);
 
 <script setup lang="ts">
 // 1. 导入外部依赖
-import { ref, computed } from 'vue';
-import { onShow } from '@dcloudio/uni-app';
+import { ref, computed } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 
 // 2. 导入组件
-import CustomTabBar from '@/components/CustomTabBar.vue';
+import CustomTabBar from '@/components/CustomTabBar.vue'
 
 // 3. 导入工具/配置
-import config from '@/config';
+import config from '@/config'
+import { useUserStore } from '@/stores/user'
+import { http } from '@/api/request'
 
 // 4. 类型定义（如有）
 interface UserInfo {
-  nickname: string;
-  level: 'copper' | 'silver' | 'gold';
+  nickname: string
+  level: 'copper' | 'silver' | 'gold'
 }
 
 // 5. 响应式数据
-const loading = ref(true);
-const userInfo = ref<UserInfo>({ ... });
+const loading = ref(true)
+const userInfo = ref<UserInfo>({ ... })
 
 // 6. 计算属性
-const currentLevel = computed(() => { ... });
+const currentLevel = computed(() => { ... })
 
 // 7. 方法定义
-const handleAction = () => { ... };
+const handleAction = () => { ... }
 
 // 8. 生命周期
-onShow(() => { ... });
+onShow(() => { ... })
 </script>
 
 <style lang="less" scoped>
@@ -209,11 +259,21 @@ onShow(() => { ... });
 
 ### 命名规范
 
-- **组件名**: PascalCase（如 `CustomTabBar.vue`）
-- **页面目录**: 小写 + 连字符（如 `city-select/`）
-- **变量/函数**: camelCase
-- **常量**: 大写 + 下划线
-- **类名**: 小写 + 连字符（BEM 风格）
+| 类型 | 规范 | 示例 |
+|------|------|------|
+| 组件名 | PascalCase | `CustomTabBar.vue` |
+| 页面目录 | 小写 + 连字符 | `city-select/` |
+| 变量/函数 | camelCase | `getUserInfo()` |
+| 常量 | 大写 + 下划线 | `DEFAULT_PAGE_SIZE` |
+| 类名 | 小写 + 连字符（BEM） | `.points-card__title` |
+
+### TypeScript 规范
+
+- 启用严格模式（`strict: true`）
+- 必须显式声明函数返回类型
+- 优先使用 `interface` 定义对象类型
+- 使用 `type` 定义联合类型和工具类型
+- 避免使用 `any`，使用 `unknown` 或具体类型
 
 ### 样式编写规范
 
@@ -234,6 +294,8 @@ onShow(() => { ... });
 
 ## 路由与页面配置
 
+### 页面配置
+
 页面配置统一在 `src/pages.json` 中管理：
 
 ```json
@@ -248,10 +310,32 @@ onShow(() => { ... });
 }
 ```
 
-导航方式：
-- `uni.switchTab({ url: '/pages/home/index' })` - Tab 切换
-- `uni.navigateTo({ url: '/pages/stores/index' })` - 页面跳转
-- `uni.navigateBack()` - 返回
+### 导航方式
+
+```typescript
+// Tab 切换
+uni.switchTab({ url: '/pages/home/index' })
+
+// 页面跳转
+uni.navigateTo({ url: '/package-store/pages/stores/index' })
+
+// 重定向（不保留历史）
+uni.redirectTo({ url: '/pages/home/index' })
+
+// 返回
+uni.navigateBack()
+```
+
+### 分包配置
+
+项目采用主包 + 4个分包策略：
+
+| 分包 | 路径 | 预加载规则 |
+|------|------|-----------|
+| package-invite | 邀请海报 | my页加载时预加载 |
+| package-store | 门店列表 | home页加载时预加载 |
+| package-platform | CPS平台 | home页加载时预加载 |
+| package-webview | 内置浏览器 | 按需加载 |
 
 ---
 
@@ -274,29 +358,70 @@ onShow(() => { ... });
 
 ```vue
 <script setup lang="ts">
-import CustomTabBar from '@/components/CustomTabBar.vue';
+import CustomTabBar from '@/components/CustomTabBar.vue'
+import LocationHeader from '@/components/LocationHeader.vue'
 </script>
+```
+
+---
+
+## 状态管理
+
+项目使用基于 Vue3 `reactive` 的轻量级状态管理：
+
+```typescript
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+
+// 使用状态
+console.log(userStore.state.isLoggedIn)
+console.log(userStore.nickname.value)
+
+// 调用方法
+await userStore.wxLogin()
+await userStore.logout()
 ```
 
 ---
 
 ## 网络请求
 
-使用封装的 request 方法：
+使用封装的 `http` 对象：
 
 ```typescript
-import request from '@/api/request';
+import { http } from '@/api/request'
 
 // GET 请求
-const data = await request('/api/points', 'GET');
+const data = await http.get('/api/points', { userId: 1 })
 
 // POST 请求
-const result = await request('/api/order', 'POST', { id: 1 });
+const result = await http.post('/api/order', { id: 1 })
+
+// 显示加载提示
+const data = await http.get('/api/data', null, { 
+  showLoading: true, 
+  loadingText: '加载中...' 
+})
 ```
 
-### Mock 数据
+### 带缓存的请求
 
-开发模式下启用 Mock（`src/config.ts` 中设置 `isMock: true`）：
+```typescript
+import { cachedRequest, CacheKeys, CacheExpires } from '@/utils/cache'
+
+const data = await cachedRequest(
+  CacheKeys.HOME_DATA,
+  () => http.get('/home'),
+  CacheExpires.HOME_DATA
+)
+```
+
+---
+
+## Mock 数据
+
+开发模式下启用 Mock（`src/config/index.ts` 中设置 `enableMock: true`）：
 
 ```typescript
 // src/mock/index.ts
@@ -304,7 +429,27 @@ mockStore['/api/new-feature'] = {
   code: 200,
   message: '请求成功',
   data: { ... }
-};
+}
+```
+
+---
+
+## 埋点统计
+
+```typescript
+import { usePageView, useClickTrack } from '@/composables'
+import { trackClick, trackEvent } from '@/utils/tracker'
+
+// 页面埋点
+usePageView('home', { from: 'tab' })
+
+// 点击埋点
+const handleClick = () => {
+  trackClick('button_click', { id: 'submit' })
+}
+
+// 或使用组合式函数
+const trackBuy = useClickTrack('buy_click')
 ```
 
 ---
@@ -326,21 +471,40 @@ mockStore['/api/new-feature'] = {
    padding-bottom: env(safe-area-inset-bottom);
    ```
 
-### 条件编译
+### 条件编译语法
 
 ```typescript
 // #ifdef MP-WEIXIN
-// 仅微信小程序
+// 仅微信小程序代码
 // #endif
 
 // #ifndef H5
-// 非 H5 平台
+// 非 H5 平台代码
 // #endif
 
 // #ifdef APP-PLUS
-// App 端
+// App 端代码
 // #endif
 ```
+
+---
+
+## CI/CD 流程
+
+### GitHub Actions 工作流
+
+- **CI Pipeline**: 代码检查、构建测试、部署
+- **PR Check**: PR 时代码检查和构建测试
+
+### 触发条件
+- `push` 到 `main` 或 `develop` 分支
+- `pull_request` 到 `main` 或 `develop` 分支
+
+### 工作流步骤
+1. Lint & Type Check (ESLint + TypeScript)
+2. Build Test (H5 + MP-Weixin)
+3. Deploy H5 to GitHub Pages (main分支)
+4. Build MP-Weixin Artifact
 
 ---
 
@@ -355,7 +519,7 @@ mockStore['/api/new-feature'] = {
      password: "your-ftp-password",
      host: "your-ftp-host",
      remoteRoot: "/lmzf/"
-   };
+   }
    ```
 
 2. 执行部署：
@@ -374,15 +538,25 @@ mockStore['/api/new-feature'] = {
 
 ---
 
+## 安全注意事项
+
+1. **敏感信息**: 不要将 API 密钥、密码等硬编码在代码中，使用环境变量
+2. **Token 管理**: 使用 `useUserStore` 管理登录态，自动处理 Token 刷新
+3. **请求签名**: 生产环境 API 请求需要签名验证
+4. **数据加密**: 敏感本地存储数据需加密
+
+---
+
 ## 重要文件说明
 
 | 文件 | 说明 |
 |------|------|
 | `src/manifest.json` | 应用配置，包含各平台 appid、权限等 |
 | `src/pages.json` | 页面路由、导航栏、TabBar 配置 |
-| `src/config.ts` | 全局配置，控制 Mock、API 地址等 |
+| `src/config/index.ts` | 全局配置，控制 Mock、API 地址等 |
 | `src/App.vue` | 应用根组件，包含全局样式和初始化逻辑 |
-| `vite.config.ts` | Vite 构建配置，含路径别名 @ |
+| `src/uni.scss` | 主题变量和混入，支持暗黑模式 |
+| `vite.config.ts` | Vite 构建配置，含路径别名 `@` |
 
 ---
 
@@ -398,16 +572,20 @@ mockStore['/api/new-feature'] = {
 
 5. **底部导航**: 使用 `CustomTabBar` 组件实现中间凸起的扫码按钮效果，需在页面中手动引入并配合 `uni.hideTabBar()`
 
-6. **更新检测**: App.vue 中已集成微信小程序更新提示
+6. **更新检测**: `App.vue` 中已集成微信小程序更新提示
+
+7. **暗黑模式**: 使用 CSS 变量 `var(--bg-primary)`、`var(--text-primary)` 等实现自动适配
 
 ---
 
 ## 版本信息
 
-- **当前版本**: v0.2.0
+- **当前版本**: v1.1.1
 - **Vue**: 3.4.21
 - **UniApp**: 3.0.0-4080420251103001
 - **TDesign UniApp**: 0.7.1
+- **Vite**: 5.2.8
+- **TypeScript**: 4.9.4
 
 ---
 

@@ -1,49 +1,267 @@
-// Mock 数据存储
-const mockStore: Record<string, any> = {};
+/**
+ * Mock 数据模块
+ * 使用增强版 Mock 核心系统
+ */
 
-// 初始化 Mock 数据
+import {
+  initMockInterceptor,
+  register,
+  registerResource,
+  type MockContext,
+  type MockResponse,
+} from './core'
+import config from '@/config'
+
+/**
+ * 初始化 Mock 数据
+ */
 export function initMock() {
-  // 示例：积分查询接口
-  mockStore['/api/points'] = {
-    code: 200,
-    message: '请求成功',
-    data: {
-      points: 12993,
-      deductAmount: 129.93,
-    },
-  };
-
-  // 拦截 uni.request
-  const originalRequest = uni.request;
-  // @ts-ignore
-  uni.request = function (options: UniApp.RequestOptions) {
-    const url = options.url || '';
-    
-    // 检查是否有对应的 mock 数据
-    for (const key in mockStore) {
-      if (url.endsWith(key)) {
-        const mockData = mockStore[key];
-        setTimeout(() => {
-          if (options.success) {
-            options.success({
-              data: mockData,
-              statusCode: 200,
-              header: {},
-              cookies: [],
-              errMsg: 'request:ok',
-            } as UniApp.RequestSuccessCallbackResult);
-          }
-          if (options.complete) {
-            options.complete({} as any);
-          }
-        }, 300);
-        return { abort: () => {} } as UniApp.RequestTask;
-      }
-    }
-    
-    // 如果没有 mock 数据，调用原始请求
-    return originalRequest(options);
-  };
+  if (!config.api.enableMock) return
+  
+  // 初始化拦截器
+  initMockInterceptor()
+  
+  // 注册首页相关 Mock
+  registerHomeMocks()
+  
+  // 注册用户相关 Mock
+  registerUserMocks()
+  
+  // 注册门店相关 Mock
+  registerStoreMocks()
+  
+  console.log('[Mock] Mock 系统已初始化')
 }
 
-export default { initMock };
+/**
+ * 首页相关 Mock
+ */
+function registerHomeMocks(): void {
+  // 获取积分信息
+  register('GET', '/api/points', {
+    response: (): MockResponse => ({
+      code: 200,
+      message: '请求成功',
+      data: {
+        points: 12993,
+        deductAmount: 129.93,
+        todayEarned: 156,
+        totalEarned: 25890,
+      },
+    }),
+    delay: [200, 500],
+  })
+  
+  // 获取首页数据
+  register('GET', '/api/home', {
+    response: (): MockResponse => ({
+      code: 200,
+      message: '请求成功',
+      data: {
+        banners: [
+          { id: '1', image: '/static/banner1.png', title: '物业费减免', link: '/pages/home/index' },
+          { id: '2', image: '/static/banner2.png', title: '邀请返利', link: '/package-invite/pages/invite/poster' },
+        ],
+        notices: [
+          { id: '1', title: '系统升级公告', createTime: '2026-02-15' },
+          { id: '2', title: '春节活动开始啦', createTime: '2026-02-10' },
+        ],
+      },
+    }),
+    delay: 300,
+  })
+}
+
+/**
+ * 用户相关 Mock
+ */
+function registerUserMocks(): void {
+  // RESTful 用户资源
+  registerResource('/api/users', {
+    // GET /api/users
+    index: (): MockResponse => ({
+      code: 200,
+      message: '请求成功',
+      data: {
+        list: [
+          { id: '1', nickname: '用户1', level: 'gold' },
+          { id: '2', nickname: '用户2', level: 'silver' },
+        ],
+        total: 2,
+      },
+    }),
+    
+    // GET /api/users/:id
+    show: (ctx: MockContext): MockResponse => ({
+      code: 200,
+      message: '请求成功',
+      data: {
+        id: ctx.params.id,
+        nickname: '梅菜扣肉',
+        avatar: '/static/avatar1.png',
+        level: 'gold',
+        coins: 1250,
+        coinLabel: '柠檬币',
+        coupons: 3,
+        joinDays: 12,
+        inviteCount: 8,
+        points: 12993,
+        balance: 129.93,
+      },
+    }),
+    
+    // POST /api/users
+    create: (ctx: MockContext): MockResponse => ({
+      code: 200,
+      message: '创建成功',
+      data: {
+        id: Date.now().toString(),
+        ...ctx.body,
+        createTime: new Date().toISOString(),
+      },
+    }),
+    
+    // PUT /api/users/:id
+    update: (ctx: MockContext): MockResponse => ({
+      code: 200,
+      message: '更新成功',
+      data: {
+        id: ctx.params.id,
+        ...ctx.body,
+        updateTime: new Date().toISOString(),
+      },
+    }),
+    
+    // DELETE /api/users/:id
+    destroy: (ctx: MockContext): MockResponse => ({
+      code: 200,
+      message: '删除成功',
+      data: { id: ctx.params.id },
+    }),
+  })
+  
+  // 登录
+  register('POST', '/auth/login', {
+    response: (ctx: MockContext): MockResponse => {
+      const { code } = ctx.body || {}
+      
+      if (!code) {
+        return { code: 400, message: '缺少登录凭证' }
+      }
+      
+      return {
+        code: 200,
+        message: '登录成功',
+        data: {
+          token: 'mock_token_' + Date.now(),
+          refreshToken: 'mock_refresh_' + Date.now(),
+          expiresIn: 7200,
+          userInfo: {
+            id: '1',
+            nickname: '梅菜扣肉',
+            avatar: '/static/avatar1.png',
+            level: 'gold',
+          },
+        },
+      }
+    },
+    delay: 500,
+  })
+  
+  // 刷新 Token
+  register('POST', '/auth/refresh', {
+    response: (ctx: MockContext): MockResponse => {
+      const { refreshToken } = ctx.body || {}
+      
+      if (!refreshToken) {
+        return { code: 401, message: '缺少刷新令牌' }
+      }
+      
+      return {
+        code: 200,
+        message: '刷新成功',
+        data: {
+          token: 'mock_token_' + Date.now(),
+          refreshToken: 'mock_refresh_' + Date.now(),
+          expiresIn: 7200,
+        },
+      }
+    },
+    delay: 300,
+  })
+  
+  // 登出
+  register('POST', '/auth/logout', {
+    response: (): MockResponse => ({
+      code: 200,
+      message: '登出成功',
+    }),
+    delay: 200,
+  })
+}
+
+/**
+ * 门店相关 Mock
+ */
+function registerStoreMocks(): void {
+  // 门店列表
+  register('GET', '/api/stores', {
+    response: (ctx: MockContext): MockResponse => {
+      const { page = 1, pageSize = 20, city } = ctx.query
+      
+      const stores = Array.from({ length: Number(pageSize) }, (_, i) => ({
+        id: String((Number(page) - 1) * Number(pageSize) + i + 1),
+        name: `门店${i + 1}`,
+        address: `${city || '北京'}市朝阳区某街道${i + 1}号`,
+        phone: '400-888-8888',
+        latitude: 39.9 + Math.random() * 0.1,
+        longitude: 116.4 + Math.random() * 0.1,
+        distance: Math.floor(Math.random() * 5000),
+        rating: (4 + Math.random()).toFixed(1),
+        businessHours: '09:00-21:00',
+        tags: ['优惠', '返现'],
+      }))
+      
+      return {
+        code: 200,
+        message: '请求成功',
+        data: {
+          list: stores,
+          total: 100,
+          page: Number(page),
+          pageSize: Number(pageSize),
+          hasMore: Number(page) * Number(pageSize) < 100,
+        },
+      }
+    },
+    delay: [300, 800],
+  })
+  
+  // 门店详情
+  register('GET', '/api/stores/:id', {
+    response: (ctx: MockContext): MockResponse => ({
+      code: 200,
+      message: '请求成功',
+      data: {
+        id: ctx.params.id,
+        name: '示例门店',
+        address: '北京市朝阳区某街道1号',
+        phone: '400-888-8888',
+        latitude: 39.9,
+        longitude: 116.4,
+        rating: '4.8',
+        businessHours: '09:00-21:00',
+        tags: ['优惠', '返现', '积分翻倍'],
+        images: ['/static/store1.png', '/static/store2.png'],
+        description: '这是一家优质的合作门店，消费可获积分返现。',
+      },
+    }),
+    delay: 300,
+  })
+}
+
+// 导出核心 API 供外部使用
+export { register, registerResource }
+export type { MockContext, MockResponse, MockHandler } from './core'
+
+export default { initMock, register, registerResource }

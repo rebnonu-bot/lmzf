@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
+import { onLaunch, onShow, onHide, onError, onPageNotFound, onUnhandledRejection } from "@dcloudio/uni-app";
 import { reactive } from "vue";
 import config from "./config";
 import { initMock } from "./mock/index";
 import createBus from "./utils/eventBus";
-import LocationHeader from "@/components/LocationHeader.vue";
 
 // 初始化 Mock 数据
 if (config.isMock) {
@@ -59,6 +58,37 @@ onHide(() => {
   console.log("App Hide");
 });
 
+// 全局错误处理
+onError((err) => {
+  console.error('[Global Error]', err);
+  // 可以在这里上报错误到监控服务
+  if (config.features.enableLogReport) {
+    // 上报错误日志
+    uni.request({
+      url: `${config.api.baseUrl}/log/error`,
+      method: 'POST',
+      data: {
+        error: String(err),
+        timestamp: Date.now(),
+        platform: uni.getSystemInfoSync().platform,
+      },
+    });
+  }
+});
+
+// 未处理的 Promise 拒绝
+onUnhandledRejection((res) => {
+  console.error('[Unhandled Rejection]', res);
+});
+
+// 页面不存在处理
+onPageNotFound((res) => {
+  console.error('[Page Not Found]', res.path);
+  uni.redirectTo({
+    url: '/pages/home/index'
+  });
+});
+
 // 导出全局方法供页面使用
 // export { globalData, eventBus, setUnreadNum, getUnreadNum };
 </script>
@@ -96,5 +126,21 @@ page {
   height: 100vh;
   background-color: #fff;
   overflow: hidden;
+}
+
+/* 图片懒加载样式 */
+.lazy-loading {
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.lazy-loaded {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.lazy-error {
+  opacity: 1;
+  filter: grayscale(100%);
 }
 </style>

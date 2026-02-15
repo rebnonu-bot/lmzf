@@ -25,6 +25,9 @@ export interface PageResult<T = any> {
   hasMore: boolean
 }
 
+// 用户等级
+export type UserLevel = 'copper' | 'silver' | 'gold'
+
 // 用户信息
 export interface UserInfo {
   id: string
@@ -33,6 +36,18 @@ export interface UserInfo {
   phone?: string
   points?: number
   balance?: number
+  /** 用户等级 */
+  level?: UserLevel
+  /** 柠檬币数量 */
+  coins?: number
+  /** 优惠券数量 */
+  coupons?: number
+  /** 加入天数 */
+  joinDays?: number
+  /** 邀请人数 */
+  inviteCount?: number
+  /** 柠檬币标签 */
+  coinLabel?: string
 }
 
 // 城市信息
