@@ -1,0 +1,55 @@
+# PR 检查工作流
+# 在 PR 时运行代码检查和构建测试
+
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  pr-check:
+    name: Pull Request Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Lint Code
+        run: npm run lint
+
+      - name: Type Check
+        run: npm run type-check
+
+      - name: Build H5
+        run: npm run build:h5
+
+      - name: Build MP-Weixin
+        run: npm run build:mp-weixin
+
+      - name: Comment PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ PR 检查失败，请修复代码问题后再提交。'
+            })

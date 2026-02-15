@@ -417,15 +417,15 @@ const animatePoints = () => {
 };
 
 const handleInvite = () => {
-  uni.navigateTo({ url: '/pages/invite/poster' });
+  uni.navigateTo({ url: '/package-invite/pages/invite/poster' });
 };
 
 const handleOffline = () => {
-  uni.navigateTo({ url: '/pages/stores/index' });
+  uni.navigateTo({ url: '/package-store/pages/stores/index' });
 };
 
 const handleOnline = () => {
-  uni.navigateTo({ url: '/pages/platforms/index' });
+  uni.navigateTo({ url: '/package-platform/pages/platforms/index' });
 };
 
 // 复制客服微信

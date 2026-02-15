@@ -2,9 +2,24 @@
 
 邻檬智家旗下的专业支付服务平台。
 
-**当前版本**: `v0.2.0`
+**当前版本**: `v0.3.0`
+
+---
 
 ## 更新日志
+
+### v0.3.0 (2026-02-15)
+- **架构全面升级**:
+  - **配置管理**: 多环境配置文件，支持 development / production / test 环境自动切换。
+  - **API 层重构**: 完整的请求封装，支持拦截器、错误处理、Token 自动刷新。
+  - **状态管理**: 轻量级用户状态管理 (useUserStore)，支持微信小程序登录、登出、Token 刷新。
+  - **数据缓存**: 内存缓存 + Storage 持久化双缓存策略，支持过期时间控制。
+  - **埋点统计**: 完整的埋点系统，支持页面浏览、点击事件、错误监控、性能追踪。
+- **分包优化**: 微信小程序分包加载，优化首屏加载速度。
+- **代码规范**: ESLint + Prettier + Husky + lint-staged 完整代码规范工作流。
+- **CI/CD**: GitHub Actions 自动化构建、检查、部署工作流。
+- **组件封装**: EmptyState、ErrorBoundary、SafeArea 等通用组件。
+- **暗黑模式**: 完整的浅色/深色模式适配。
 
 ### v0.2.0 (2026-02-13)
 - **功能页面全面升级**:
@@ -18,71 +33,179 @@
 
 ### v0.1.2 (2026-02-13)
 - **首页 UI 重大升级**:
-  - **毛玻璃视效**: 首页顶部核心区域引入 Glassmorphism（毛玻璃）设计，大幅提升界面现代感。
-  - **布局重构**: 优化积分展示与卡片装饰区域的层级关系，实现同级对齐，视觉更加稳固协调。
-  - **卡片细节雕琢**: 
-    - 精准调整装饰卡片位置与不透明度，解决背景刺眼及文字阅读困难问题。
-    - 增强卡片文字对比度与投影效果，确保关键信息清晰可见。
+  - **毛玻璃视效**: 首页顶部核心区域引入 Glassmorphism（毛玻璃）设计。
+  - **布局重构**: 优化积分展示与卡片装饰区域的层级关系。
+  - **卡片细节雕琢**: 增强卡片文字对比度与投影效果。
 - **交互体验增强**:
-  - **数值滚动加载**: 为主积分及抵扣金额添加 `easeOutExpo` 平滑滚动增长动画，增强页面活力。
-  - **功能引导优化**: 
-    - 新增"？"信息角标，采用实心橙色白边设计，精准上标定位。
-    - 新增实心橙色"去抵扣"按钮，显著提升功能辨识度与点击欲望。
-- **多端适配**:
-  - 优化 H5 与小程序端的容器顶部间距，确保跨平台视觉一致性。
+  - **数值滚动加载**: 为主积分及抵扣金额添加 `easeOutExpo` 平滑滚动增长动画。
+  - **功能引导优化**: 新增"？"信息角标和"去抵扣"按钮。
+- **多端适配**: 优化 H5 与小程序端的容器顶部间距。
 
-### v0.1.1 (2026-02-12)
-- **扫码功能上线**: 
-  - 新增沉浸式"扫一扫"页面，支持动态扫描线动画及相册识别。
-  - 移除原有的政策中心页面。
-- **UI & 导航体验**:
-  - **全局导航栏适配**: 统一了全站自定义导航栏高度标准，完美避开小程序胶囊按钮，提升视觉舒适度。
-  - **TabBar 动效**: 为底部扫码按钮增加"呼吸灯"呼吸效果，引导用户操作。
-  - **城市选择优化**: 重新排版搜索结果页，增加结果统计及精致的空状态提示。
-- **性能与修复**:
-  - 修复 TDesign 字体加载 ERR_CACHE_MISS 错误（改为本地加载）。
-  - 优化扫码按钮缩放动画，开启 GPU 加速，解决卡顿问题。
+[查看更多历史版本](./CHANGELOG.md)
 
-### v0.1.0 (2024-07-13)
-- **UI 优化**: 重新设计首页支付卡片装饰图标。
-  - 引入支付宝、微信支付、安全盾牌、小程序等品牌图标。
-  - 采用"小清新"马卡龙色系渐变设计。
-  - 实现 3D 悬浮与动态浮动效果。
-  - 极致精简尺寸，提升视觉精致度。
-- **项目构建**: 完成 H5 端生产环境编译测试。
+---
 
 ## 项目简介
+
 本项目是基于 [tdesign-uniapp-starter](https://github.com/novlan1/tdesign-uniapp-starter) 开发的 UniApp 项目，采用了 TDesign 企业级设计体系。
 
 ## 技术栈
+
 - **框架**: Vue 3 + UniApp 3.0
 - **UI 组件库**: [TDesign UniApp](https://tdesign.tencent.com/mobile-vue/)
 - **构建工具**: Vite
 - **语言**: TypeScript
+- **代码规范**: ESLint + Prettier + Husky
+- **CI/CD**: GitHub Actions
 
-## 页面结构
+---
+
+## 项目结构
 
 ```
-pages/
-├── home/index.vue          # 首页 - 积分展示、功能入口
-├── my/index.vue            # 我的 - 个人中心
-├── scan/index.vue          # 扫码 - 沉浸式扫一扫
-├── city-select/index.vue   # 城市选择
-├── invite/
-│   └── poster.vue          # 邀请海报
-├── stores/
-│   └── index.vue           # 门店列表
-├── platforms/
-│   └── index.vue           # CPS 平台
-└── webview/
-    └── index.vue           # 内置浏览器
-
-components/
-├── CustomTabBar.vue        # 自定义底部导航
-├── LocationHeader.vue      # 顶部定位组件
-├── PageSkeleton.vue        # 骨架屏加载
-└── PageLoader.vue          # 全屏加载动画
+src/
+├── api/                    # API 请求
+│   └── request.ts          # 请求封装（拦截器、错误处理）
+├── components/             # 组件
+│   ├── CustomTabBar.vue
+│   ├── LocationHeader.vue
+│   ├── EmptyState.vue      # 空状态组件 ✅
+│   ├── ErrorBoundary.vue   # 错误边界组件 ✅
+│   ├── PageSkeleton.vue
+│   ├── PageLoader.vue
+│   └── SafeArea.vue        # 安全区适配 ✅
+├── composables/            # Vue3 组合式函数 ✅
+│   ├── useStorage.ts
+│   ├── useLoading.ts
+│   ├── useLocation.ts
+│   ├── useTracker.ts       # 埋点组合式函数 ✅
+│   └── index.ts
+├── config/                 # 配置 ✅
+│   └── index.ts            # 多环境配置
+├── constants/              # 常量 ✅
+│   ├── enums.ts
+│   └── index.ts
+├── mock/                   # Mock 数据
+├── package-invite/         # 邀请分包 ✅
+│   └── pages/invite/
+├── package-platform/       # 平台分包 ✅
+│   └── pages/platforms/
+├── package-store/          # 门店分包 ✅
+│   └── pages/stores/
+├── package-webview/        # WebView 分包 ✅
+│   └── pages/webview/
+├── pages/                  # 主包页面
+│   ├── home/index.vue
+│   ├── my/index.vue
+│   ├── scan/index.vue
+│   └── city-select/index.vue
+├── static/                 # 静态资源
+├── stores/                 # 状态管理 ✅
+│   └── user.ts             # 用户状态管理
+├── styles/                 # 样式
+│   └── variable.less
+├── types/                  # TypeScript 类型 ✅
+│   ├── api.d.ts
+│   ├── business.d.ts
+│   ├── global.d.ts
+│   └── index.ts
+├── utils/                  # 工具函数
+│   ├── cache.ts            # 缓存管理 ✅
+│   ├── cityData.ts
+│   ├── eventBus.ts
+│   └── tracker.ts          # 埋点统计 ✅
+├── App.vue
+├── main.ts
+├── manifest.json
+├── pages.json              # 分包配置 ✅
+└── uni.scss                # 主题变量 ✅
 ```
+
+---
+
+## 核心功能
+
+### 1. 配置管理
+
+```typescript
+import config from '@/config'
+
+// 获取 API 地址
+config.api.baseUrl
+
+// 判断环境
+config.isDev  // true/false
+
+// 获取存储键名
+config.storage.tokenKey
+```
+
+### 2. 用户状态管理
+
+```typescript
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+
+// 登录
+await userStore.wxLogin()
+
+// 获取用户信息
+await userStore.fetchUserInfo()
+
+// 登出
+await userStore.logout()
+```
+
+### 3. 数据缓存
+
+```typescript
+import { CacheManager, CacheKeys, CacheExpires } from '@/utils/cache'
+
+// 内存缓存
+CacheManager.set('key', data, 60000)
+const data = CacheManager.get('key')
+
+// 持久化缓存
+PersistentCache.set(CacheKeys.HOME_DATA, data, CacheExpires.HOME_DATA)
+
+// 带缓存的请求
+const data = await cachedRequest(
+  CacheKeys.HOME_DATA,
+  () => http.get('/home'),
+  CacheExpires.HOME_DATA
+)
+```
+
+### 4. 埋点统计
+
+```typescript
+import { usePageView, useClickTrack } from '@/composables'
+import { trackClick } from '@/utils/tracker'
+
+// 页面埋点
+usePageView('home', { from: 'tab' })
+
+// 点击埋点
+const handleClick = () => {
+  trackClick('button_click', { id: 'submit' })
+}
+
+// 或使用组合式函数
+const trackBuy = useClickTrack('buy_click')
+```
+
+### 5. 分包加载
+
+主包（Tab 页）+ 4 个分包：
+- `package-invite` - 邀请海报
+- `package-store` - 门店列表
+- `package-platform` - CPS 平台
+- `package-webview` - 内置浏览器
+
+预加载配置：首页加载时预加载门店和平台分包。
+
+---
 
 ## 设计系统
 
@@ -92,19 +215,54 @@ components/
 - **背景**: `#F4F9FF` (极浅蓝灰)
 - **卡片**: 毛玻璃效果 `backdrop-filter: blur(20rpx)`
 
+### 暗黑模式
+```scss
+// 自动适配
+.my-component {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+```
+
 ### 圆角规范
 - **大卡片**: 32rpx
 - **小卡片**: 24rpx
 - **按钮**: 28rpx - 40rpx
 
+---
+
 ## 开发规范
-详细的设计与开发规范请参考 [MASTER.md](./MASTER.md)。
+
+### 代码检查
+```bash
+# 检查并修复代码
+npm run lint
+
+# 格式化代码
+npm run format
+
+# TypeScript 检查
+npm run type-check
+```
+
+### Git 提交
+```bash
+# 提交前会自动运行 lint-staged
+# 检查 .vue,.ts,.tsx 文件
+```
+
+---
 
 ## 快速开始
 
 ### 安装依赖
 ```bash
 npm install --legacy-peer-deps
+```
+
+### 初始化 husky
+```bash
+npm run prepare
 ```
 
 ### 运行项目
@@ -130,3 +288,23 @@ npm run build:mp-weixin
 # 自动构建并部署到 FTP
 node deploy.js
 ```
+
+---
+
+## CI/CD
+
+### GitHub Actions 工作流
+
+- **CI Pipeline**: 代码检查、构建测试、部署
+- **PR Check**: PR 时代码检查和构建测试
+
+### 触发条件
+- `push` 到 `main` 或 `develop` 分支
+- `pull_request` 到 `main` 或 `develop` 分支
+
+---
+
+## 详细文档
+
+- [开发规范](./MASTER.md)
+- [更新日志](./CHANGELOG.md)

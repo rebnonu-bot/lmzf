@@ -1,0 +1,24 @@
+# 依赖
+node_modules
+.pnpm-store
+
+# 构建输出
+dist
+unpackage
+
+# 日志
+*.log
+
+# 忽略特定文件
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

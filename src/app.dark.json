@@ -1,0 +1,14 @@
+{
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "邻檬智付",
+    "navigationBarBackgroundColor": "#0F172A",
+    "backgroundColor": "#0F172A"
+  },
+  "tabBar": {
+    "color": "#64748B",
+    "selectedColor": "#60A5FA",
+    "backgroundColor": "#1E293B",
+    "borderStyle": "black"
+  }
+}

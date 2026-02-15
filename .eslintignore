@@ -1,0 +1,22 @@
+# 依赖
+node_modules
+.pnpm-store
+
+# 构建输出
+dist
+unpackage
+
+# 静态资源
+static
+src/static
+
+# 配置和生成文件
+*.config.js
+*.config.ts
+manifest.json
+pages.json
+project.config.json
+project.private.config.json
+
+# 类型声明文件
+*.d.ts

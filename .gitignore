@@ -31,3 +31,6 @@ Thumbs.db
 # Uni-app specific
 .sourcemap/
 *.zip
+
+# ESLint cache
+.eslintcache

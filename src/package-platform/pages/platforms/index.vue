@@ -195,7 +195,7 @@ const goToPlatform = (platform: Platform) => {
 
 const openWebview = (url: string) => {
   uni.navigateTo({
-    url: `/pages/webview/index?url=${encodeURIComponent(url)}`
+    url: `/package-webview/pages/webview/index?url=${encodeURIComponent(url)}`
   });
 };
 </script>

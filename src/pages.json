@@ -1,84 +1,116 @@
 {
-	"pages": [
-		{
-			"path": "pages/home/index",
-			"style": {
-				"navigationStyle": "custom",
-				"enablePullDownRefresh": true
-			}
-		},
-		{
-			"path": "pages/my/index",
-			"style": {
-				"navigationStyle": "custom",
-				"enablePullDownRefresh": true
-			}
-		},
-		{
-			"path": "pages/scan/index",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTextStyle": "white"
-			}
-		},
-		{
-			"path": "pages/city-select/index",
-			"style": {
-				"navigationStyle": "custom",
-				"disableScroll": false,
-				"enablePullDownRefresh": false
-			}
-		},
-		{
-			"path": "pages/webview/index",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/invite/poster",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/stores/index",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/platforms/index",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		}
-	],
-	"tabBar": {
-		"custom": false,
-		"color": "#64748B",
-		"selectedColor": "#3B82F6",
-		"backgroundColor": "#ffffff",
-		"list": [
-			{
-				"pagePath": "pages/home/index",
-				"text": "首页"
-			},
-			{
-				"pagePath": "pages/my/index",
-				"text": "我的"
-			}
-		]
-	},
-	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "邻檬智付",
-		"navigationBarBackgroundColor": "#fff",
-		"backgroundColor": "#f3f3f3"
-	},
-	"easycom": {
-		"custom": {
-			"^t-(.*)": "@tdesign/uniapp/$1/$1.vue"
-		}
-	}
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/my/index",
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/scan/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/city-select/index",
+      "style": {
+        "navigationStyle": "custom",
+        "disableScroll": false,
+        "enablePullDownRefresh": false
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "package-invite",
+      "pages": [
+        {
+          "path": "pages/invite/poster",
+          "style": {
+            "navigationStyle": "custom"
+          }
+        }
+      ]
+    },
+    {
+      "root": "package-store",
+      "pages": [
+        {
+          "path": "pages/stores/index",
+          "style": {
+            "navigationStyle": "custom"
+          }
+        }
+      ]
+    },
+    {
+      "root": "package-platform",
+      "pages": [
+        {
+          "path": "pages/platforms/index",
+          "style": {
+            "navigationStyle": "custom"
+          }
+        }
+      ]
+    },
+    {
+      "root": "package-webview",
+      "pages": [
+        {
+          "path": "pages/webview/index",
+          "style": {
+            "navigationStyle": "custom"
+          }
+        }
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/home/index": {
+      "network": "all",
+      "packages": ["package-store", "package-platform"]
+    },
+    "pages/my/index": {
+      "network": "all",
+      "packages": ["package-invite"]
+    }
+  },
+  "tabBar": {
+    "custom": false,
+    "color": "#64748B",
+    "selectedColor": "#3B82F6",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/my/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "邻檬智付",
+    "navigationBarBackgroundColor": "#fff",
+    "backgroundColor": "#f3f3f3"
+  },
+  "easycom": {
+    "custom": {
+      "^t-(.*)": "@tdesign/uniapp/$1/$1.vue"
+    }
+  }
 }

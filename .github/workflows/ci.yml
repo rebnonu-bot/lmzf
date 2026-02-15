@@ -1,0 +1,175 @@
+# CI/CD 工作流
+# 包含：代码检查、构建、测试、部署
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ========== 代码检查 ==========
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: ESLint Check
+        run: npm run lint
+
+      - name: TypeScript Check
+        run: npm run type-check
+
+  # ========== 构建测试 ==========
+  build:
+    name: Build Test
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        platform: [h5, mp-weixin]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build ${{ matrix.platform }}
+        run: npm run build:${{ matrix.platform }}
+
+      - name: Upload Build Artifact (${{ matrix.platform }})
+        if: matrix.platform == 'h5'
+        uses: actions/upload-artifact@v4
+        with:
+          name: h5-build
+          path: dist/build/h5
+          retention-days: 7
+
+  # ========== 部署 H5 到 GitHub Pages ==========
+  deploy-h5:
+    name: Deploy H5 to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [lint, build]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: h5-build
+          path: dist/build/h5
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/build/h5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ========== 构建微信小程序并上传 ==========
+  build-mp-weixin:
+    name: Build & Upload MP-Weixin
+    runs-on: ubuntu-latest
+    needs: [lint]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build MP-Weixin
+        run: npm run build:mp-weixin
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mp-weixin-build
+          path: dist/build/mp-weixin
+          retention-days: 7
+
+      # 可选：自动上传到微信小程序后台（需要配置密钥）
+      # - name: Upload to WeChat MP
+      #   uses: qicfan/mp-ci-action@v1
+      #   with:
+      #     appid: ${{ secrets.WECHAT_APPID }}
+      #     private-key: ${{ secrets.WECHAT_PRIVATE_KEY }}
+      #     version: ${{ github.sha }}
+      #     desc: 'Auto deploy from GitHub Actions'
+
+  # ========== 生成 Changelog ==========
+  changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Changelog
+        uses: github-changelog-generator/github-changelog-generator@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Changelog
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git diff --quiet && git diff --staged --quiet || git commit -m "docs: update changelog"
+
+      - name: Push Changelog
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
