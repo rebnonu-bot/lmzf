@@ -12,15 +12,19 @@ export const homeMockData = {
   
   // 用户信息
   userInfo: {
+    id: '1',
     nickname: '梅菜扣肉',
     avatar: '/static/avatar1.png',
+    phone: '13800138000',
+    points: 12993,
+    balance: 129.93,
     level: 'gold',
     coins: 1250,
     coinLabel: '柠檬币',
     coupons: 3,
     joinDays: 12,
     inviteCount: 8,
-  } as Partial<UserInfo>,
+  } as UserInfo,
   
   // 等级配置
   levelConfig: {

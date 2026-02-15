@@ -89,7 +89,7 @@ function parseQuery(url: string): Record<string, string> {
 function extractPath(url: string): string {
   // 移除协议和域名
   const pathMatch = url.match(/^(?:https?:\/\/[^/]+)?(\/[^?]*)/)
-  return pathMatch ? pathMatch[1] : url.split('?')[0]
+  return pathMatch?.[1] ?? url.split('?')[0]!
 }
 
 /**
@@ -123,7 +123,10 @@ function matchRule(method: HttpMethod, url: string): { handler: MockHandler; par
     if (match) {
       const params: Record<string, string> = {}
       paramNames.forEach((name, index) => {
-        params[name] = match[index + 1]
+        const value = match[index + 1]
+        if (value !== undefined) {
+          params[name] = value
+        }
       })
       return { handler, params }
     }
@@ -276,6 +279,13 @@ export function initMockInterceptor(): void {
     const method = (options.method?.toUpperCase() || 'GET') as HttpMethod
     const url = options.url || ''
     
+    // 创建任务对象（使用类型断言满足接口要求）
+    const task: UniApp.RequestTask = {
+      abort: () => {},
+      onHeadersReceived: () => task,
+      offHeadersReceived: () => task,
+    }
+    
     executeMock(method, url, {
       data: options.data,
       header: options.header as Record<string, string>,
@@ -298,10 +308,11 @@ export function initMockInterceptor(): void {
         }, result.delay)
       } else {
         // 没有匹配的规则，调用原始请求
-        return originalRequest(options)
+        const originalTask = (originalRequest(options) as unknown) as UniApp.RequestTask
+        task.abort = originalTask.abort.bind(originalTask)
       }
     })
     
-    return { abort: () => {} } as UniApp.RequestTask
+    return task
   }
 }

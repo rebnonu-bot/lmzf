@@ -2,7 +2,7 @@
  * Storage 封装组合式函数
  */
 
-import { ref, watch, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import config from '@/config'
 
 const { storage } = config
@@ -13,9 +13,9 @@ const { storage } = config
  * @param defaultValue 默认值
  * @returns [值, 设置值函数]
  */
-export function useStorage<T>(key: string, defaultValue: T): [Ref<T>, (val: T) => void] {
+export function useStorage<T>(key: string, defaultValue: T): [Readonly<Ref<T>>, (val: T) => void] {
   const storedValue = uni.getStorageSync(key)
-  const data = ref<T>(storedValue !== '' ? storedValue : defaultValue)
+  const data = ref<T>(storedValue !== '' ? storedValue : defaultValue) as Ref<T>
 
   const setValue = (value: T) => {
     data.value = value

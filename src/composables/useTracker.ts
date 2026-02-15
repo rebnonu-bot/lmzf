@@ -2,7 +2,7 @@
  * 埋点相关组合式函数
  */
 
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted } from 'vue'
 import { trackPageView, trackClick, trackPerformance } from '@/utils/tracker'
 
 /**

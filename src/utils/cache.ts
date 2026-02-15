@@ -14,7 +14,7 @@ interface CacheItem<T> {
 }
 
 // 缓存配置
-interface CacheOptions {
+export interface CacheOptions {
   /** 缓存键名 */
   key: string
   /** 过期时间（毫秒），默认 5 分钟 */

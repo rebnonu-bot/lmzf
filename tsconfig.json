@@ -3,7 +3,7 @@
   "compilerOptions": {
     "sourceMap": true,
     "baseUrl": ".",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "paths": {
       "@/*": [
         "./src/*"
@@ -42,5 +42,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "node_modules/@tdesign/uniapp/global.d.ts"
+  ],
+  "exclude": [
+    "src/__tests__/**/*.ts"
   ]
 }

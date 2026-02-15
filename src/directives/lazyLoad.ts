@@ -6,6 +6,8 @@
 import type { Directive, DirectiveBinding } from 'vue'
 
 interface LazyOptions {
+  /** 图片 URL */
+  src?: string
   /** 占位图 URL */
   placeholder?: string
   /** 错误时显示的图片 */
@@ -19,8 +21,8 @@ interface LazyOptions {
 // 图片加载状态
 const imageCache = new Set<string>()
 
-// 默认配置
-const defaultOptions: Required<LazyOptions> = {
+// 默认配置（不含 src，因为 src 是必填的）
+const defaultOptions: Required<Omit<LazyOptions, 'src'>> = {
   placeholder: '/static/placeholder.png',
   error: '/static/error.png',
   rootMargin: '50px',

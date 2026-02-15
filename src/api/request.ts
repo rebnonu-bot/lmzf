@@ -4,12 +4,12 @@
  */
 
 import config from '@/config'
-import type { ApiResponse, HttpError } from '@/types/api.d'
+import type { HttpError } from '@/types/api.d'
 
-const { api, storage, isDev } = config
+const { api, storage } = config
 
-// 请求方法类型
-type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
+// 请求方法类型（注：PATCH 方法在 UniApp 中可能不被所有平台支持）
+type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'HEAD' | 'TRACE' | 'CONNECT'
 
 // 请求配置选项
 interface RequestOptions {
@@ -232,6 +232,7 @@ function delay(ms: number): Promise<void> {
 
 /**
  * 显示错误提示
+ * 内部辅助函数
  */
 function showErrorToast(message: string) {
   uni.showToast({
@@ -240,6 +241,9 @@ function showErrorToast(message: string) {
     duration: 2000,
   })
 }
+
+// 导出给外部使用
+export { showErrorToast }
 
 // ==================== 便捷请求方法 ====================
 
@@ -276,9 +280,20 @@ export const http = {
     return request<T>(url + queryString, { ...options, method: 'DELETE' })
   },
 
-  /** PATCH 请求 */
+  /** 
+   * PATCH 请求（使用 POST + X-HTTP-Method-Override 头部兼容）
+   * 注：部分小程序平台不支持原生 PATCH 方法
+   */
   patch<T = any>(url: string, data?: Record<string, any>, options?: Omit<RequestOptions, 'method' | 'data'>) {
-    return request<T>(url, { ...options, method: 'PATCH', data })
+    return request<T>(url, { 
+      ...options, 
+      method: 'POST', 
+      data,
+      headers: {
+        ...options?.headers,
+        'X-HTTP-Method-Override': 'PATCH'
+      }
+    })
   },
 }
 

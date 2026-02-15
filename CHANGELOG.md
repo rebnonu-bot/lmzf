@@ -1,5 +1,151 @@
 # 更新日志 (Changelog)
 
+## [1.3.1] - 2026-02-16
+
+### 部署与构建优化
+- **FTP 部署脚本优化** (`deploy.js`)
+  - 支持自动创建远程目录 `/lmzf/`
+  - 优化路径配置，确保 H5 资源正确上传
+- **版本号更新**
+  - 更新 `package.json` 至 `1.3.1`
+  - 更新 `manifest.json` 至 `1.0.1` (Code `101`)
+
+## [1.3.0] - 2026-02-16
+
+### TypeScript 类型安全全面升级
+
+#### 全局类型定义完善
+- **扩展 UniApp 类型** (`src/types/global.d.ts`)
+  - 添加 `GlobalData` 全局数据类型
+  - 添加 `EventBus` 事件总线类型
+  - 添加 `ScrollEvent` 滚动事件类型
+  - 使用 `declare global` 正确扩展 `Uni` 接口，支持 `uni.$globalData` 和 `uni.$eventBus`
+
+- **环境变量类型** (`src/env.d.ts`)
+  - 添加 `ImportMetaEnv` 接口定义 Vite 环境变量
+  - 修复 `import.meta.env` 访问类型错误
+
+#### 核心模块类型修复
+- **请求模块** (`src/api/request.ts`)
+  - 修复 `RequestMethod` 类型，移除不支持的 `PATCH` 原生方法
+  - 使用 POST + `X-HTTP-Method-Override` 头部实现 PATCH 兼容
+  - 导出 `showErrorToast` 函数供外部使用
+
+- **Mock 核心** (`src/mock/core.ts`)
+  - 修复 `extractPath` 返回值可能为 `undefined` 的问题
+  - 完善 `RequestTask` 类型，添加缺失的 `onHeadersReceived`/`offHeadersReceived` 方法
+  - 修复路径参数匹配时可能出现的 `undefined` 值
+
+- **事件总线** (`src/utils/eventBus.ts`)
+  - 使用非空断言修复严格空检查错误
+  - 统一回调函数类型为 `(...args: unknown[]) => void`
+
+### 架构优化
+
+#### API 层分离 (`src/api/modules/`)
+- **用户模块** (`src/api/modules/user.ts`)
+  - `getUserInfo`: 获取用户信息（支持 Mock/真实接口自动切换）
+  - `updateUserInfo`: 更新用户信息
+  - `wxLogin`: 微信小程序登录
+  - `refreshToken`: Token 刷新
+  - `logout`: 用户登出
+  - `getUserPoints`: 获取用户积分信息
+
+- **首页模块** (`src/api/modules/home.ts`)
+  - `getHomeData`: 获取首页数据
+  - `getBanners`: 获取 Banner 列表
+  - `getNotices`: 获取公告列表
+  - `getPointsConfig`: 获取积分展示配置
+
+- **统一导出** (`src/api/index.ts`)
+  - 集中导出所有 API 模块
+  - 保持向后兼容的 `http` 对象导出
+
+#### 组合式函数库扩展 (`src/composables/`)
+- **剪贴板操作** (`src/composables/useClipboard.ts`)
+  - `copy`: 复制文本到剪贴板
+  - 支持自定义成功提示
+  - 内置错误处理和加载状态
+
+- **电话功能** (`src/composables/usePhone.ts`)
+  - `call`: 拨打电话（支持座机和手机号）
+  - `isValidPhone`: 验证手机号格式
+  - `formatPhone`: 格式化手机号显示
+
+- **错误处理** (`src/composables/useErrorHandler.ts`)
+  - `handle`: 统一错误处理方法
+  - `wrap`: 包装异步函数自动捕获错误
+  - `success`/`toast`: 快速显示提示
+  - 提供 `error`/`errorLevel`/`loading` 响应式状态
+
+#### 常量配置集中管理 (`src/constants/app.ts`)
+- **应用信息** (`APP_INFO`)
+  - 应用名称、标语、版本号、版权信息
+
+- **联系方式** (`CONTACT`)
+  - 客服微信、电话、服务时间
+
+- **公司信息** (`COMPANY`)
+  - 公司名称、品牌、简介
+
+- **业务配置** (`POINTS`/`INVITE`/`LINKS`/`ANIMATION`)
+  - 积分抵扣比例、邀请返利比例、页面链接、动画时间
+
+#### 统一错误处理 (`src/utils/errorHandler.ts`)
+- **错误处理函数** `handleError`
+  - 支持多级别错误：`info`/`warn`/`error`/`fatal`
+  - 自动显示用户提示
+  - 支持错误上报到服务器
+
+- **工具函数**
+  - `showErrorToast`/`showSuccessToast`: 显示提示
+  - `reportError`: 上报错误到监控服务
+  - `withErrorHandler`: 包装异步函数
+  - `createSafeFunction`: 创建安全执行的同步函数
+  - `initGlobalErrorHandler`: 初始化全局错误监听
+
+### 代码质量修复
+
+#### 组件优化
+- **LocationHeader** (`src/components/LocationHeader.vue`)
+  - 添加 `HeaderStyle` 接口统一样式对象类型
+  - 修复 `StyleValue` 类型不兼容问题
+
+- **SafeArea** (`src/components/SafeArea.vue`)
+  - 移除未使用的 `safeArea` 变量
+
+- **VirtualList** (`src/components/VirtualList.vue`)
+  - 移除未使用的 `onMounted` 导入
+
+- **ErrorBoundary** (`src/components/ErrorBoundary.vue`)
+  - 使用下划线前缀标记未使用参数 `_instance`
+
+#### 组合式函数优化
+- **useStorage** (`src/composables/useStorage.ts`)
+  - 移除未使用的 `watch` 导入
+  - 修复返回类型 `Readonly<Ref<T>>`
+
+- **useTracker** (`src/composables/useTracker.ts`)
+  - 移除未使用的 `onUnmounted` 导入
+
+#### 指令优化
+- **lazyLoad** (`src/directives/lazyLoad.ts`)
+  - 添加 `src` 字段到 `LazyOptions` 接口
+  - 修复 `defaultOptions` 类型定义
+
+### 工程化配置
+
+#### TypeScript 配置 (`tsconfig.json`)
+- 修改 `moduleResolution` 从 `bundler` 改为 `node`
+- 添加 `exclude` 配置排除测试文件
+- 修复 `resolveJsonModule` 与模块解析策略冲突
+
+#### 测试类型支持
+- 添加 `src/__tests__/vitest.d.ts` 类型声明文件
+- 支持 Vitest 全局函数和 `@vue/test-utils` 类型
+
+---
+
 ## [1.2.0] - 2026-02-15
 
 ### 代码质量优化

@@ -78,7 +78,7 @@ const isDev = computed(() => config.isDev)
 /**
  * 捕获子组件错误
  */
-onErrorCaptured((err: Error, instance, info: string) => {
+onErrorCaptured((err: Error, _instance, info: string) => {
   hasError.value = true
   error.value = err
   errorInfo.value = `${info}\n\n${err.stack || ''}`

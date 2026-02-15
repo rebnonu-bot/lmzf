@@ -4,14 +4,15 @@ import { reactive } from "vue";
 import config from "./config";
 import { initMock } from "./mock/index";
 import createBus from "./utils/eventBus";
+import type { GlobalData } from "./types/global.d";
 
 // 初始化 Mock 数据
-if (config.isMock) {
+if (config.api.enableMock) {
   initMock();
 }
 
 // 全局状态
-const globalData = reactive({
+const globalData = reactive<GlobalData>({
   userInfo: null,
 });
 
@@ -19,8 +20,8 @@ const globalData = reactive({
 const eventBus = createBus();
 
 // 将全局状态挂载到 uni 上
-(uni as any).$globalData = globalData;
-(uni as any).$eventBus = eventBus;
+uni.$globalData = globalData;
+uni.$eventBus = eventBus;
 
 onLaunch(() => {
   console.log("App Launch");

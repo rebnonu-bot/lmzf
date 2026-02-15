@@ -55,8 +55,23 @@ const displayCityName = computed(() => {
   }
 });
 
+// 样式对象类型
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface HeaderStyle extends Record<string, string | number | undefined> {
+  position: 'absolute' | 'fixed' | 'relative'
+  top: number | string
+  left: number | string
+  right: number | string
+  height: string
+  zIndex: number
+  paddingLeft?: string
+  paddingRight?: string
+  display?: string
+  alignItems?: string
+}
+
 // 计算头部样式
-const headerStyle = computed(() => {
+const headerStyle = computed<HeaderStyle>(() => {
   // #ifdef MP-WEIXIN
   // 小程序端：高度包含状态栏，内容定位
   const systemInfo = uni.getSystemInfoSync();

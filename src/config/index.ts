@@ -6,15 +6,15 @@
 // 环境类型
 export type EnvType = 'development' | 'production' | 'test'
 
-// 当前环境
-export const env: EnvType = import.meta.env.MODE as EnvType || 'development'
+// 当前环境（Vite 环境变量）
+export const env: EnvType = (import.meta.env?.MODE as EnvType) || 'development'
 
 // 环境配置
 export const config = {
   // 应用信息
   app: {
     name: '邻檬智付',
-    version: '1.1.1',
+    version: '1.3.0',
     buildVersion: '20250215',
   },
   

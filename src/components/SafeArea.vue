@@ -73,8 +73,8 @@ const safeAreaStyle = computed(() => {
     backgroundColor: props.backgroundColor,
   }
 
-  const safeArea = systemInfo.value.safeArea
   const safeAreaInsets = systemInfo.value.safeAreaInsets
+  // safeAreaInsets 用于计算顶部和底部安全区域
 
   // 顶部安全区域
   if (props.position === 'top' || props.position === 'both') {

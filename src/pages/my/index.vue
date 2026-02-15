@@ -7,13 +7,11 @@
           <text>邻檬</text>
         </view>
         <view class="company-info">
-          <text class="company-name">邻檬智付</text>
-          <text class="company-slogan">让天下没有难收的物业费</text>
+          <text class="company-name">{{ COMPANY.name }}</text>
+          <text class="company-slogan">{{ APP_INFO.slogan }}</text>
         </view>
       </view>
-      <view class="company-desc">
-        邻檬智付是邻檬智家旗下的专业支付服务平台，致力于为社区业主提供便捷、安全的物业费缴纳及积分抵扣服务。
-      </view>
+      <view class="company-desc">{{ COMPANY.description }}</view>
     </view>
 
     <!-- 联系方式 -->
@@ -26,7 +24,7 @@
           </view>
           <view class="contact-content">
             <text class="contact-label">客服微信</text>
-            <text class="contact-value">lingmeng2024</text>
+            <text class="contact-value">{{ CONTACT.wechat }}</text>
           </view>
           <view class="contact-action">
             <text>复制</text>
@@ -39,7 +37,7 @@
           </view>
           <view class="contact-content">
             <text class="contact-label">客服电话</text>
-            <text class="contact-value">400-888-8888</text>
+            <text class="contact-value">{{ CONTACT.phone }}</text>
           </view>
           <view class="contact-action">
             <text>拨打</text>
@@ -52,7 +50,7 @@
           </view>
           <view class="contact-content">
             <text class="contact-label">服务时间</text>
-            <text class="contact-value">周一至周日 9:00-21:00</text>
+            <text class="contact-value">{{ CONTACT.serviceHours }}</text>
           </view>
         </view>
       </view>
@@ -72,35 +70,34 @@
 import { ref } from 'vue';
 import CustomTabBar from '@/components/CustomTabBar.vue';
 import { onShow } from '@dcloudio/uni-app';
-import { myMockData, homeMockData } from '@/config/mock.config';
+import { useClipboard, usePhone, useErrorHandler } from '@/composables';
+import { APP_INFO, CONTACT, COMPANY } from '@/constants/app';
 
 const activeTab = ref<'home' | 'my'>('my');
-const version = ref(myMockData.version);
+const version = ref(APP_INFO.version);
+
+// 错误处理
+const { wrap } = useErrorHandler({ componentName: 'MyPage' });
+
+// 使用组合式函数（包装带错误处理）
+const { copy } = useClipboard({ 
+  successMsg: '微信号已复制' 
+});
+const { call } = usePhone();
+
+// 包装后的安全函数
+const copyWechat = wrap(async () => {
+  return await copy(CONTACT.wechat);
+}, { toastMessage: '复制失败，请重试' });
+
+const makePhoneCall = wrap(async () => {
+  return await call(CONTACT.phone);
+}, { showToast: false }); // 拨打取消不需要提示
 
 onShow(() => {
   activeTab.value = 'my';
   uni.hideTabBar();
 });
-
-// 复制客服微信
-const copyWechat = () => {
-  uni.setClipboardData({
-    data: homeMockData.contact.wechat,
-    success: () => {
-      uni.showToast({ title: '微信号已复制', icon: 'success' });
-    }
-  });
-};
-
-// 拨打客服电话
-const makePhoneCall = () => {
-  uni.makePhoneCall({
-    phoneNumber: homeMockData.contact.phone,
-    fail: () => {
-      console.log('用户取消拨打');
-    }
-  });
-};
 </script>
 
 <style lang="less" scoped>
