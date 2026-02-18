@@ -580,7 +580,7 @@ const trackBuy = useClickTrack('buy_click')
 
 ## 版本信息
 
-- **当前版本**: v1.1.1
+- **当前版本**: v1.3.2
 - **Vue**: 3.4.21
 - **UniApp**: 3.0.0-4080420251103001
 - **TDesign UniApp**: 0.7.1
