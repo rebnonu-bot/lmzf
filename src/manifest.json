@@ -2,8 +2,8 @@
   "name": "邻檬智付",
   "appid": "",
   "description": "",
-  "versionName": "1.0.1",
-  "versionCode": "101",
+  "versionName": "1.0.2",
+  "versionCode": "102",
   "transformPx": false,
   "app-plus": {
     "usingComponents": true,

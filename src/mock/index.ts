@@ -15,8 +15,12 @@ import config from '@/config'
 /**
  * 初始化 Mock 数据
  */
+let initialized = false
+
 export function initMock() {
-  if (!config.api.enableMock) return
+  if (!config.api.enableMock || initialized) return
+  
+  initialized = true
   
   // 初始化拦截器
   initMockInterceptor()

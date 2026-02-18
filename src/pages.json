@@ -28,6 +28,12 @@
         "disableScroll": false,
         "enablePullDownRefresh": false
       }
+    },
+    {
+      "path": "pages/error/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
     }
   ],
   "subPackages": [

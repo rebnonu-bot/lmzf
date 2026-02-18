@@ -86,7 +86,7 @@ onUnhandledRejection((res) => {
 onPageNotFound((res) => {
   console.error('[Page Not Found]', res.path);
   uni.redirectTo({
-    url: '/pages/home/index'
+    url: '/pages/error/index?message=页面不存在'
   });
 });
 

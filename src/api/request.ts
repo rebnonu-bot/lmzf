@@ -247,16 +247,21 @@ export { showErrorToast }
 
 // ==================== 便捷请求方法 ====================
 
+/**
+ * 构建查询参数字符串
+ */
+function buildQueryString(params: Record<string, any>): string {
+  const query = Object.entries(params)
+    .filter(([, v]) => v !== undefined && v !== null)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+    .join('&')
+  return query ? `?${query}` : ''
+}
+
 export const http = {
   /** GET 请求 */
   get<T = any>(url: string, params?: Record<string, any>, options?: Omit<RequestOptions, 'method' | 'data'>) {
-    // 构建带查询参数的 URL
-    const queryString = params
-      ? '?' + Object.entries(params)
-          .filter(([, v]) => v !== undefined && v !== null)
-          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-          .join('&')
-      : ''
+    const queryString = params ? buildQueryString(params) : ''
     return request<T>(url + queryString, { ...options, method: 'GET' })
   },
 
@@ -272,11 +277,7 @@ export const http = {
 
   /** DELETE 请求 */
   delete<T = any>(url: string, params?: Record<string, any>, options?: Omit<RequestOptions, 'method' | 'data'>) {
-    const queryString = params
-      ? '?' + Object.entries(params)
-          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-          .join('&')
-      : ''
+    const queryString = params ? buildQueryString(params) : ''
     return request<T>(url + queryString, { ...options, method: 'DELETE' })
   },
 
