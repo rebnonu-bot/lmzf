@@ -34,3 +34,7 @@ Thumbs.db
 
 # ESLint cache
 .eslintcache
+
+# Local Configuration
+ftp.config.js
+.env

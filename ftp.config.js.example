@@ -1,0 +1,12 @@
+module.exports = {
+  user: "your_ftp_username",
+  password: "your_ftp_password",
+  host: "your_ftp_host",
+  port: 21,
+  localRoot: __dirname + "/dist/build/h5/",
+  remoteRoot: "/lmzf/",
+  include: ["*", "**/*"],      // this would upload everything except dot files
+  deleteRemote: false,        // delete ALL existing files at destination before uploading, if true
+  forcePasv: true,            // Passive mode is forced (EPSV command is not sent)
+  sftp: false                 // use sftp or ftp
+};
