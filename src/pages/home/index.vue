@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
 import type { UserInfo, UserLevel } from '@/types';
 import type { ScrollEvent } from '@/types/global.d';
@@ -69,6 +69,9 @@ import { useClipboard } from '@/composables';
 import { usePointsAnimation } from './composables/usePointsAnimation';
 import { homeMockData } from '@/config/mock.config';
 import { CONTACT } from '@/constants/app';
+import { useUserStore } from '@/stores/user';
+
+const userStore = useUserStore();
 
 // 加载状态
 const loading = ref(true);
@@ -78,25 +81,36 @@ const activeTab = ref<'home' | 'my'>('home');
 const { copy: copyToClipboard } = useClipboard({ successMsg: '已复制到剪贴板' });
 
 // 积分动画
-const { displayPoints, animate: animatePoints, reset: resetPoints } = usePointsAnimation(
-  homeMockData.targetPoints,
+const { displayPoints, animate: animatePoints, reset: resetPoints, updateTarget } = usePointsAnimation(
+  userStore.points.value,
   { duration: 1500 }
 );
+
+// 监听积分变化
+watch(() => userStore.points.value, (newPoints) => {
+  updateTarget(newPoints);
+  animatePoints();
+});
 
 // 联系信息
 const contactInfo = CONTACT;
 
-// 用户信息（直接使用 mock 数据）
-const userInfo = ref<UserInfo>({
-  id: homeMockData.userInfo.id,
-  nickname: homeMockData.userInfo.nickname!,
-  avatar: homeMockData.userInfo.avatar!,
-  level: homeMockData.userInfo.level as UserLevel,
-  coins: homeMockData.userInfo.coins!,
-  coinLabel: homeMockData.userInfo.coinLabel!,
-  coupons: homeMockData.userInfo.coupons!,
-  joinDays: homeMockData.userInfo.joinDays!,
-  inviteCount: homeMockData.userInfo.inviteCount!
+// 用户信息
+const userInfo = computed<UserInfo>(() => {
+  if (userStore.state.isLoggedIn && userStore.state.userInfo) {
+    return userStore.state.userInfo;
+  }
+  return {
+    id: homeMockData.userInfo.id,
+    nickname: '未登录',
+    avatar: homeMockData.userInfo.avatar!,
+    level: homeMockData.userInfo.level as UserLevel,
+    coins: 0,
+    coinLabel: '柠檬币',
+    coupons: 0,
+    joinDays: 0,
+    inviteCount: 0
+  };
 });
 
 // 等级配置
@@ -113,7 +127,7 @@ const handleInvite = () => {
 };
 
 const handleOffline = () => {
-  uni.navigateTo({ url: '/package-store/pages/stores/index' });
+  uni.switchTab({ url: '/pages/stores/index' });
 };
 
 const handleOnline = () => {
@@ -262,7 +276,7 @@ onPullDownRefresh(() => {
   flex-direction: column;
   gap: 48rpx;
   padding: 0 32rpx;
-  padding-bottom: 60rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 140rpx);
   
   /* #ifdef MP-WEIXIN */
   padding-top: 160rpx;

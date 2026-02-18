@@ -1,7 +1,7 @@
 <template>
   <view class="points-card">
     <view class="points-display">
-      <view class="points-info">
+      <view class="points-info" @tap="handlePointsDetail">
         <text class="points-slogan">你家物业费邻檬帮你减</text>
         <view class="points-label-row">
           <text class="points-label">当前数字积分</text>
@@ -12,7 +12,7 @@
           <view class="points-hint-tag">
             <text class="points-hint-text">可抵 {{ displayAmount }} 元</text>
           </view>
-          <view class="go-deduct-btn">
+          <view class="go-deduct-btn" @tap.stop="handleDeduct">
             <text>去抵扣</text>
             <t-icon name="chevron-right" size="24rpx" />
           </view>
@@ -65,6 +65,14 @@ const props = defineProps<{
 const displayAmount = computed(() => {
   return (props.displayPoints / 100).toFixed(2);
 });
+
+const handleDeduct = () => {
+  uni.navigateTo({ url: '/pages/property-pay/index' });
+};
+
+const handlePointsDetail = () => {
+  uni.navigateTo({ url: '/pages/points-detail/index' });
+};
 </script>
 
 <style lang="less" scoped>

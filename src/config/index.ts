@@ -31,7 +31,7 @@ export const config = {
       ? 'https://api.lmzf.com/v1'
       : env === 'test'
         ? 'https://test-api.lmzf.com/v1'
-        : 'http://localhost:3000/v1',
+        : 'http://localhost:3000',
     // 超时时间（毫秒）
     timeout: 15000,
     // 是否启用 Mock

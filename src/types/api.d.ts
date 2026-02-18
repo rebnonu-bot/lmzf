@@ -48,6 +48,8 @@ export interface UserInfo {
   inviteCount?: number
   /** 柠檬币标签 */
   coinLabel?: string
+  /** 是否已绑定房产 */
+  hasHouse?: boolean
 }
 
 // 城市信息

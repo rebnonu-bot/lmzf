@@ -7,6 +7,7 @@ import { reactive, readonly, computed } from 'vue'
 import config from '@/config'
 import type { UserInfo, LoginResult } from '@/types'
 import http from '@/api/request'
+import { getUserInfo } from '@/api/modules/user'
 
 const { storage } = config
 
@@ -31,10 +32,32 @@ const state = reactive<UserState>({
   userInfo: null,
   token: uni.getStorageSync(storage.tokenKey) || '',
   refreshToken: uni.getStorageSync(`${storage.tokenKey}_refresh`) || '',
-  expiresAt: uni.getStorageSync(`${storage.tokenKey}_expires`) || 0,
+  expiresAt: Number(uni.getStorageSync(`${storage.tokenKey}_expires`)) || 0,
   isLoggedIn: false,
   loginLoading: false,
 })
+
+// 开发环境 Mock 初始化：如果开启了 Mock 且没有登录态，自动注入模拟用户数据
+if (config.api.enableMock && !state.token) {
+  state.isLoggedIn = true;
+  state.token = 'mock_token_dev';
+  state.expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  state.userInfo = {
+    id: '1',
+    nickname: '模拟用户',
+    avatar: '/static/avatar1.png',
+    level: 'gold',
+    points: 12580,
+    balance: 888.88,
+    coins: 100,
+    coinLabel: '柠檬币',
+    coupons: 5,
+    joinDays: 100,
+    inviteCount: 10,
+    hasHouse: true,
+    phone: '13800138000'
+  } as UserInfo;
+}
 
 // 检查登录状态
 if (state.token && state.expiresAt > Date.now()) {
@@ -57,9 +80,15 @@ const getters = {
   /** 用户头像 */
   avatar: computed(() => state.userInfo?.avatar || '/static/avatar1.png'),
   /** 用户积分 */
-  points: computed(() => state.userInfo?.points || 0),
-  /** 用户余额 */
-  balance: computed(() => state.userInfo?.balance || 0),
+    points: computed(() => state.userInfo?.points || 0),
+    /** 用户余额 */
+    balance: computed(() => state.userInfo?.balance || 0),
+    /** 柠檬币数量 */
+    coins: computed(() => state.userInfo?.coins || 0),
+  /** 柠檬币标签 */
+  coinLabel: computed(() => state.userInfo?.coinLabel || '柠檬币'),
+  /** 是否已绑定房产 */
+  hasHouse: computed(() => state.userInfo?.hasHouse || false),
   /** Token 是否即将过期（2小时内） */
   isTokenExpiringSoon: computed(() => {
     if (!state.expiresAt) return false
@@ -78,6 +107,28 @@ const actions = {
       uni.setStorageSync(storage.userKey, JSON.stringify(userInfo))
     } else {
       uni.removeStorageSync(storage.userKey)
+    }
+  },
+
+  /**
+   * 获取用户信息
+   */
+  async fetchUserInfo() {
+    // 允许 Mock 模式下无登录态获取（用于开发调试）
+    if (!state.isLoggedIn && !config.api.enableMock) return null
+
+    try {
+      const userInfo = await getUserInfo()
+      this.setUserInfo(userInfo)
+      
+      // Mock 模式下强制设置为已登录
+      if (config.api.enableMock && userInfo) {
+        state.isLoggedIn = true
+      }
+      return userInfo
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+      return null
     }
   },
 
@@ -176,20 +227,6 @@ const actions = {
   },
 
   /**
-   * 获取用户信息
-   */
-  async fetchUserInfo(): Promise<void> {
-    if (!state.isLoggedIn) return
-
-    try {
-      const userInfo = await http.get<UserInfo>('/user/info')
-      this.setUserInfo(userInfo)
-    } catch (error) {
-      console.error('获取用户信息失败:', error)
-    }
-  },
-
-  /**
    * 更新用户信息
    */
   async updateUserInfo(data: Partial<UserInfo>): Promise<boolean> {
@@ -236,6 +273,16 @@ const actions = {
     }
 
     return true
+  },
+
+  /**
+   * 设置是否已绑定房产
+   */
+  setHasHouse(hasHouse: boolean) {
+    if (state.userInfo) {
+      state.userInfo.hasHouse = hasHouse
+      uni.setStorageSync(storage.userKey, JSON.stringify(state.userInfo))
+    }
   },
 }
 

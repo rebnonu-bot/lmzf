@@ -90,3 +90,97 @@ export async function getUserPoints(): Promise<{
   }
   return http.get('/api/points')
 }
+
+/**
+ * 获取柠檬币交易记录
+ */
+export async function getCoinTransactions(params?: { page: number; pageSize: number }): Promise<{
+  list: any[]
+  total: number
+}> {
+  if (config.api.enableMock) {
+    return Promise.resolve({
+      list: [
+        { id: '1', title: '每日签到', time: '2024-03-20 08:30:00', amount: 10, type: 'income' },
+        { id: '2', title: '兑换商品', time: '2024-03-19 14:20:00', amount: -50, type: 'expense' },
+        { id: '3', title: '邀请好友', time: '2024-03-18 10:00:00', amount: 20, type: 'income' },
+      ],
+      total: 3
+    })
+  }
+  return http.get('/user/coins/transactions', params)
+}
+
+/**
+ * 获取积分明细
+ */
+export async function getPointsHistory(params?: { page: number; pageSize: number; type?: 'all' | 'income' | 'expense' }): Promise<{
+  list: any[]
+  total: number
+}> {
+  if (config.api.enableMock) {
+    const list = [
+      { id: '1', title: '缴纳物业费抵扣', time: '2024-03-20 10:00:00', amount: -500, type: 'expense', category: 'deduct' },
+      { id: '2', title: '线下消费返利', time: '2024-03-19 12:30:00', amount: 120, type: 'income', category: 'offline' },
+      { id: '3', title: '邀请好友奖励', time: '2024-03-18 09:15:00', amount: 50, type: 'income', category: 'invite' },
+      { id: '4', title: '线上购物返利', time: '2024-03-17 15:45:00', amount: 80, type: 'income', category: 'online' },
+      { id: '5', title: '系统赠送', time: '2024-03-16 10:00:00', amount: 100, type: 'income', category: 'system' },
+    ];
+    return Promise.resolve({
+      list: params?.type && params.type !== 'all' 
+        ? list.filter(item => item.type === params.type)
+        : list,
+      total: 5
+    })
+  }
+  return http.get('/user/points/history', params)
+}
+
+/**
+ * 获取钱包明细（佣金记录）
+ */
+export async function getWalletHistory(params?: { page: number; pageSize: number; type?: 'all' | 'income' | 'expense' }): Promise<{
+  list: any[]
+  total: number
+}> {
+  if (config.api.enableMock) {
+    const list = [
+      { id: '1', title: '邀请好友首单奖励', time: '2024-03-20 14:30:00', amount: 5.00, type: 'income' },
+      { id: '2', title: '提现到微信零钱', time: '2024-03-18 16:20:00', amount: -50.00, type: 'expense', status: 'success' },
+      { id: '3', title: '下级消费提成', time: '2024-03-17 11:10:00', amount: 2.50, type: 'income' },
+    ];
+    return Promise.resolve({
+      list: params?.type && params.type !== 'all' 
+        ? list.filter(item => item.type === params.type)
+        : list,
+      total: 3
+    })
+  }
+  return http.get('/user/wallet/history', params)
+}
+
+/**
+ * 申请提现
+ */
+export async function withdraw(amount: number, method: 'wechat' | 'alipay' | 'bank'): Promise<{ success: boolean, message: string }> {
+  if (config.api.enableMock) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true, message: '提现申请已提交' });
+      }, 1000);
+    });
+  }
+  return http.post('/user/wallet/withdraw', { amount, method })
+}
+
+/**
+ * 获取优惠券列表
+ */
+export async function getUserCoupons(status: 'unused' | 'used' | 'expired' = 'unused'): Promise<any[]> {
+  if (config.api.enableMock) {
+    // @ts-ignore
+    const allCoupons = homeMockData.coupons || [];
+    return Promise.resolve(allCoupons.filter((c: any) => c.status === status));
+  }
+  return http.get('/user/coupons', { status });
+}

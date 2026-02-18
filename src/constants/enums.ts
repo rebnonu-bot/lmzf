@@ -41,7 +41,7 @@ export enum PagePath {
   MY = '/pages/my/index',
   SCAN = '/pages/scan/index',
   CITY_SELECT = '/pages/city-select/index',
-  STORES = '/package-store/pages/stores/index',
+  STORES = '/pages/stores/index',
   PLATFORMS = '/package-platform/pages/platforms/index',
   INVITE_POSTER = '/package-invite/pages/invite/poster',
   WEBVIEW = '/package-webview/pages/webview/index',

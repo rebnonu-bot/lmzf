@@ -22,37 +22,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useCityStore } from '@/stores/city';
 
+const cityStore = useCityStore();
 const menuButtonInfo = ref({ top: 0, height: 0 });
 
 onMounted(() => {
   // #ifdef MP-WEIXIN
-  // 获取胶囊按钮位置，用于对齐
   const menuButton = uni.getMenuButtonBoundingClientRect();
   menuButtonInfo.value = menuButton;
   
-  // 计算文字位置
-  // 文字应该与胶囊按钮垂直居中对齐
   const centerY = menuButton.top + menuButton.height / 2;
-  const textHeight = 20; // 文字大约高度
+  const textHeight = 20; 
   const textTop = centerY - textHeight / 2;
   brandLocationTop.value = `${textTop}px`;
   // #endif
-  
-  uni.$on('updateCity', handleCityUpdate);
 });
 
-const currentCity = ref('赣州');
-const isLocated = ref(false);
-const brandLocationTop = ref('60px'); // 小程序端文字位置的默认值
+const isLocated = ref(false); // 暂时保留，后续可结合定位状态优化
+const brandLocationTop = ref('60px'); 
 
 const displayCityName = computed(() => {
-  if (isLocated.value) {
-    return currentCity.value.replace('市', '');
-  } else {
-    return '选择城市';
-  }
+  return cityStore.currentCity.value.replace('市', '');
 });
 
 // 样式对象类型
@@ -111,16 +103,6 @@ const goToCitySelect = () => {
     animationDuration: 300
   });
 };
-
-// 监听城市更新事件
-const handleCityUpdate = (city: string) => {
-  currentCity.value = city;
-  isLocated.value = true;
-};
-
-onUnmounted(() => {
-  uni.$off('updateCity', handleCityUpdate);
-});
 </script>
 
 <style lang="less" scoped>

@@ -1,5 +1,65 @@
 <template>
   <view class="page-container">
+    <!-- 未登录状态 -->
+    <view class="login-card" v-if="!userStore.state.isLoggedIn" @tap="handleLogin">
+      <view class="avatar-placeholder">
+        <t-icon name="user" size="64rpx" color="#fff" />
+      </view>
+      <view class="login-text">
+        <text class="login-title">点击登录/注册</text>
+        <text class="login-desc">登录后享受更多权益</text>
+      </view>
+      <t-icon name="chevron-right" size="48rpx" color="#999" />
+    </view>
+
+    <!-- 用户资产卡片 -->
+    <view class="assets-card" v-else>
+      <view class="assets-header">
+        <text class="assets-title">我的资产</text>
+      </view>
+      <view class="assets-grid">
+        <view class="asset-item" @tap="handlePoints">
+          <text class="asset-num">{{ userStore.points }}</text>
+          <text class="asset-label">积分</text>
+        </view>
+        <view class="asset-item" @tap="handleCoins">
+          <text class="asset-num">{{ userStore.coins }}</text>
+          <text class="asset-label">{{ userStore.coinLabel }}</text>
+        </view>
+        <view class="asset-item" @tap="handleCoupons">
+          <text class="asset-num">{{ userStore.state.userInfo?.coupons || 0 }}</text>
+          <text class="asset-label">优惠券</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 功能列表 -->
+    <view class="menu-list">
+      <view class="menu-item" @tap="handleWallet">
+        <view class="menu-left">
+          <t-icon name="wallet" size="40rpx" color="#3B82F6" />
+          <text class="menu-text">我的钱包</text>
+        </view>
+        <t-icon name="chevron-right" size="40rpx" color="#999" />
+      </view>
+      
+      <view class="menu-item" @tap="handleInvite">
+        <view class="menu-left">
+          <t-icon name="share" size="40rpx" color="#F59E0B" />
+          <text class="menu-text">邀请好友</text>
+        </view>
+        <t-icon name="chevron-right" size="40rpx" color="#999" />
+      </view>
+
+      <view class="menu-item" @tap="handleHouse">
+        <view class="menu-left">
+          <t-icon name="home" size="40rpx" color="#10B981" />
+          <text class="menu-text">房屋管理</text>
+        </view>
+        <t-icon name="chevron-right" size="40rpx" color="#999" />
+      </view>
+    </view>
+
     <!-- 公司介绍卡片 -->
     <view class="company-card">
       <view class="company-header">
@@ -72,8 +132,10 @@ import CustomTabBar from '@/components/CustomTabBar.vue';
 import { onShow } from '@dcloudio/uni-app';
 import { useClipboard, usePhone, useErrorHandler } from '@/composables';
 import { APP_INFO, CONTACT, COMPANY } from '@/constants/app';
+import { useUserStore } from '@/stores/user';
 
-const activeTab = ref<'home' | 'my'>('my');
+const userStore = useUserStore();
+const activeTab = ref<'home' | 'stores' | 'wallet' | 'my'>('my');
 const version = ref(APP_INFO.version);
 
 // 错误处理
@@ -94,6 +156,34 @@ const makePhoneCall = wrap(async () => {
   return await call(CONTACT.phone);
 }, { showToast: false }); // 拨打取消不需要提示
 
+const handleLogin = () => {
+  uni.navigateTo({ url: '/pages/login/index' });
+};
+
+const handlePoints = () => {
+  uni.navigateTo({ url: '/pages/points-detail/index' });
+};
+
+const handleCoins = () => {
+  uni.navigateTo({ url: '/pages/lemon-coin/index' });
+};
+
+const handleCoupons = () => {
+  uni.navigateTo({ url: '/pages/coupon/index' });
+};
+
+const handleWallet = () => {
+  uni.switchTab({ url: '/pages/wallet/index' });
+};
+
+const handleInvite = () => {
+  uni.navigateTo({ url: '/package-invite/pages/invite/poster' });
+};
+
+const handleHouse = () => {
+  uni.navigateTo({ url: '/pages/bind-house/index' });
+};
+
 onShow(() => {
   activeTab.value = 'my';
   uni.hideTabBar();
@@ -106,6 +196,93 @@ onShow(() => {
   background-color: #F4F9FF;
   position: relative;
   padding-bottom: 120rpx;
+}
+
+/* 登录卡片 */
+.login-card {
+  margin: 32rpx;
+  background-color: #fff;
+  border-radius: 32rpx;
+  padding: 40rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  
+  .avatar-placeholder {
+    width: 100rpx;
+    height: 100rpx;
+    background: linear-gradient(135deg, #3B82F6, #60A5FA);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 24rpx;
+  }
+  
+  .login-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    
+    .login-title {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 8rpx;
+    }
+    
+    .login-desc {
+      font-size: 24rpx;
+      color: #999;
+    }
+  }
+}
+
+/* 资产卡片 */
+.assets-card {
+  margin: 32rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-radius: 32rpx;
+  padding: 32rpx;
+  color: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.25);
+
+  .assets-header {
+    margin-bottom: 32rpx;
+    
+    .assets-title {
+      font-size: 32rpx;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+  }
+
+  .assets-grid {
+    display: flex;
+    justify-content: space-around;
+    
+    .asset-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8rpx;
+
+      .asset-num {
+        font-size: 40rpx;
+        font-weight: bold;
+        font-family: 'DIN Alternate', sans-serif;
+      }
+
+      .asset-label {
+        font-size: 24rpx;
+        opacity: 0.8;
+      }
+
+      &:active {
+        opacity: 0.8;
+      }
+    }
+  }
 }
 
 /* 公司介绍卡片 */
@@ -161,6 +338,38 @@ onShow(() => {
   font-size: 28rpx;
   color: #475569;
   line-height: 1.6;
+}
+
+/* 功能列表 */
+.menu-list {
+  margin: 32rpx;
+  background-color: #fff;
+  border-radius: 24rpx;
+  padding: 0 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  
+  .menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32rpx 0;
+    border-bottom: 1rpx solid #f5f5f5;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .menu-left {
+      display: flex;
+      align-items: center;
+      gap: 24rpx;
+      
+      .menu-text {
+        font-size: 28rpx;
+        color: #333;
+      }
+    }
+  }
 }
 
 /* 联系方式 */

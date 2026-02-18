@@ -22,6 +22,13 @@ export function usePointsAnimation(targetPoints: number, options: UsePointsAnima
   const easeOutExpo = (x: number): number => {
     return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
   };
+  
+  // 内部存储目标值
+  let currentTarget = targetPoints;
+
+  const updateTarget = (newTarget: number) => {
+    currentTarget = newTarget;
+  };
 
   const animate = () => {
     displayPoints.value = 0;
@@ -31,7 +38,7 @@ export function usePointsAnimation(targetPoints: number, options: UsePointsAnima
       const now = Date.now();
       const progress = Math.min((now - startTime) / duration, 1);
       
-      displayPoints.value = Math.floor(easeOutExpo(progress) * targetPoints);
+      displayPoints.value = Math.floor(easeOutExpo(progress) * currentTarget);
       
       if (progress < 1) {
         setTimeout(update, 16); // 模拟 60fps
@@ -50,6 +57,7 @@ export function usePointsAnimation(targetPoints: number, options: UsePointsAnima
     displayAmount,
     animate,
     reset,
+    updateTarget
   };
 }
 

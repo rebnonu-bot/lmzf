@@ -33,11 +33,15 @@
         </view>
         
         <view class="right-stats">
-          <view class="stat-item">
+          <view class="stat-item" @tap="handleWallet">
+            <text class="stat-value">{{ userInfo.balance || 0 }}</text>
+            <text class="stat-label">钱包</text>
+          </view>
+          <view class="stat-item" @tap="handleCoins">
             <text class="stat-value">{{ userInfo.coins }}</text>
             <text class="stat-label">{{ userInfo.coinLabel }}</text>
           </view>
-          <view class="stat-item">
+          <view class="stat-item" @tap="handleCoupons">
             <text class="stat-value">{{ userInfo.coupons }}</text>
             <text class="stat-label">优惠券</text>
           </view>
@@ -67,6 +71,18 @@ const currentLevel = computed(() => {
   const level = props.userInfo.level as UserLevel;
   return props.levelConfig[level] || props.levelConfig.copper;
 });
+
+const handleWallet = () => {
+  uni.navigateTo({ url: '/pages/wallet/index' });
+};
+
+const handleCoins = () => {
+  uni.navigateTo({ url: '/pages/lemon-coin/index' });
+};
+
+const handleCoupons = () => {
+  uni.navigateTo({ url: '/pages/coupon/index' });
+};
 </script>
 
 <style lang="less" scoped>
@@ -201,6 +217,11 @@ const currentLevel = computed(() => {
           .stat-label {
             font-size: 22rpx;
             color: #64748B;
+          }
+
+          &:active {
+            opacity: 0.7;
+            transform: scale(0.96);
           }
         }
       }

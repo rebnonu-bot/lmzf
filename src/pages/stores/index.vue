@@ -7,10 +7,9 @@
       
       <!-- 自定义导航栏 -->
       <view class="nav-bar" :style="navBarStyle">
-        <view class="back-btn" @tap="goBack">
-          <t-icon name="chevron-left" size="48rpx" color="#fff" />
+        <view class="nav-title-wrapper">
+          <text class="nav-title">线下门店</text>
         </view>
-        <text class="nav-title">线下门店</text>
         <view class="placeholder"></view>
       </view>
 
@@ -56,7 +55,7 @@
       >
         <view class="list-content">
           <view 
-            v-for="(store, index) in filteredStores" 
+            v-for="(store, index) in stores" 
             :key="index"
             class="store-card"
             @tap="goToStoreDetail(store)"
@@ -104,28 +103,28 @@
         </view>
       </scroll-view>
     </view>
+
+    <!-- 自定义底部导航 -->
+    <CustomTabBar active="stores" />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
+import CustomTabBar from '@/components/CustomTabBar.vue';
+import { getStoreList, type Store } from '@/api/modules/store';
+import { useCityStore } from '@/stores/city';
 
-interface Store {
-  id: string;
-  name: string;
-  address: string;
-  distance: string;
-  pointsRate: string;
-  tags: string[];
-  category: string;
-}
-
+const cityStore = useCityStore();
 const searchKeyword = ref('');
 const currentCategory = ref('all');
 const loading = ref(false);
 const noMore = ref(false);
 const statusBarHeight = ref(0);
 const menuButtonInfo = ref({ top: 0, height: 0 });
+const page = ref(1);
+const pageSize = 10;
 
 const categories = [
   { label: '全部', value: 'all' },
@@ -137,62 +136,44 @@ const categories = [
   { label: '药店', value: 'pharmacy' },
 ];
 
-const stores = ref<Store[]>([
-  {
-    id: '1',
-    name: '邻檬便利店（阳光店）',
-    address: '赣州市章贡区阳光路123号',
-    distance: '0.5km',
-    pointsRate: '消费1元得2积分',
-    tags: ['支持抵扣', '24小时'],
-    category: 'supermarket'
-  },
-  {
-    id: '2',
-    name: '美味轩餐厅',
-    address: '赣州市章贡区红旗大道88号',
-    distance: '1.2km',
-    pointsRate: '消费1元得3积分',
-    tags: ['新开业', '满减'],
-    category: 'food'
-  },
-  {
-    id: '3',
-    name: '活力健身房',
-    address: '赣州市章贡区体育中心2楼',
-    distance: '2.0km',
-    pointsRate: '消费1元得1积分',
-    tags: ['支持抵扣'],
-    category: 'fitness'
-  },
-  {
-    id: '4',
-    name: '靓车坊洗车',
-    address: '赣州市章贡区建设路56号',
-    distance: '3.5km',
-    pointsRate: '消费1元得2积分',
-    tags: ['会员价'],
-    category: 'car'
-  },
-  {
-    id: '5',
-    name: '康乐大药房',
-    address: '赣州市章贡区健康路99号',
-    distance: '0.8km',
-    pointsRate: '消费1元得1积分',
-    tags: ['医保定点'],
-    category: 'pharmacy'
-  },
-  {
-    id: '6',
-    name: '美丽人生美容院',
-    address: '赣州市章贡区美容街12号',
-    distance: '1.5km',
-    pointsRate: '消费1元得5积分',
-    tags: ['新开业', '体验价'],
-    category: 'beauty'
+const stores = ref<Store[]>([]);
+
+const fetchStores = async (isRefresh = false) => {
+  if (loading.value) return;
+  loading.value = true;
+  
+  if (isRefresh) {
+    page.value = 1;
+    noMore.value = false;
   }
-]);
+
+  try {
+    const res = await getStoreList({
+      keyword: searchKeyword.value,
+      category: currentCategory.value,
+      city: cityStore.currentCity.value,
+      page: page.value,
+      pageSize: pageSize
+    });
+
+    if (isRefresh) {
+      stores.value = res.list;
+    } else {
+      stores.value = [...stores.value, ...res.list];
+    }
+
+    if (res.list.length < pageSize) {
+      noMore.value = true;
+    } else {
+      page.value++;
+    }
+  } catch (error) {
+    console.error('Failed to fetch stores:', error);
+    uni.showToast({ title: '加载失败', icon: 'none' });
+  } finally {
+    loading.value = false;
+  }
+};
 
 onMounted(() => {
   const systemInfo = uni.getSystemInfoSync();
@@ -202,6 +183,13 @@ onMounted(() => {
   const menuButton = uni.getMenuButtonBoundingClientRect();
   menuButtonInfo.value = menuButton;
   // #endif
+
+  fetchStores(true);
+});
+
+// 监听城市变化
+watch(() => cityStore.currentCity.value, () => {
+  fetchStores(true);
 });
 
 const navBarStyle = computed(() => {
@@ -222,45 +210,27 @@ const navBarStyle = computed(() => {
   // #endif
 });
 
-const filteredStores = computed(() => {
-  let result = stores.value;
-  
-  if (currentCategory.value !== 'all') {
-    result = result.filter(s => s.category === currentCategory.value);
-  }
-  
-  if (searchKeyword.value) {
-    const keyword = searchKeyword.value.toLowerCase();
-    result = result.filter(s => 
-      s.name.toLowerCase().includes(keyword) ||
-      s.address.toLowerCase().includes(keyword)
-    );
-  }
-  
-  return result;
+onShow(() => {
+  uni.hideTabBar();
 });
-
-const goBack = () => {
-  uni.navigateBack();
-};
 
 const selectCategory = (value: string) => {
   currentCategory.value = value;
+  fetchStores(true);
 };
 
-const onSearch = () => {};
+const onSearch = () => {
+  fetchStores(true);
+};
 
 const goToStoreDetail = (store: Store) => {
   uni.showToast({ title: store.name, icon: 'none' });
 };
 
 const loadMore = () => {
-  if (loading.value || noMore.value) return;
-  loading.value = true;
-  setTimeout(() => {
-    loading.value = false;
-    noMore.value = true;
-  }, 1000);
+  if (!noMore.value) {
+    fetchStores();
+  }
 };
 </script>
 
@@ -303,12 +273,10 @@ page {
   padding: 0 32rpx;
 }
 
-.back-btn {
-  width: 60rpx;
-  height: 60rpx;
+.nav-title-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center;
+  height: 100%;
 }
 
 .nav-title {
@@ -391,7 +359,7 @@ page {
 }
 
 .list-content {
-  padding: 24rpx 32rpx 40rpx;
+  padding: 24rpx 32rpx calc(env(safe-area-inset-bottom) + 140rpx);
 }
 
 .store-card {

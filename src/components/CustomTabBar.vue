@@ -12,12 +12,34 @@
         <text class="tab-text">首页</text>
       </view>
 
+      <!-- 商家 -->
+      <view class="tab-item" :class="{ active: localActive === 'stores' }" @tap="goTo('/pages/stores/index')">
+        <t-icon 
+          :name="localActive === 'stores' ? 'shop-filled' : 'shop'" 
+          size="48rpx" 
+          :color="localActive === 'stores' ? '#3b82f6' : '#64748b'"
+          class="tab-icon" 
+        />
+        <text class="tab-text">商家</text>
+      </view>
+
       <!-- 扫一扫 -->
       <view class="scan-wrapper" @tap="handleScan">
         <view class="scan-button">
           <t-icon name="qrcode" size="56rpx" color="#fff" class="scan-icon" />
         </view>
         <text class="scan-text">扫一扫</text>
+      </view>
+
+      <!-- 钱包 -->
+      <view class="tab-item" :class="{ active: localActive === 'wallet' }" @tap="goTo('/pages/wallet/index')">
+        <t-icon 
+          :name="localActive === 'wallet' ? 'wallet-filled' : 'wallet'" 
+          size="48rpx" 
+          :color="localActive === 'wallet' ? '#3b82f6' : '#64748b'"
+          class="tab-icon" 
+        />
+        <text class="tab-text">钱包</text>
       </view>
 
       <!-- 我的 -->
@@ -38,7 +60,7 @@
 import { ref, watch, onMounted } from 'vue';
 
 const props = defineProps<{
-  active: 'home' | 'my'
+  active: 'home' | 'stores' | 'wallet' | 'my'
 }>();
 
 const localActive = ref(props.active);
@@ -109,7 +131,7 @@ const handleScan = () => {
   }
 
   .tab-text {
-    font-size: 24rpx;
+    font-size: 20rpx; /* Slightly smaller font for 5 items to fit comfortably */
     color: #64748b;
     font-weight: 500;
     line-height: 1;
@@ -151,7 +173,7 @@ const handleScan = () => {
   }
 
   .scan-text {
-    font-size: 26rpx;
+    font-size: 20rpx; /* Slightly smaller font */
     color: #64748b;
     font-weight: 500;
     line-height: 1;

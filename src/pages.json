@@ -22,11 +22,89 @@
       }
     },
     {
+      "path": "pages/stores/index",
+      "style": {
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
       "path": "pages/city-select/index",
       "style": {
         "navigationStyle": "custom",
         "disableScroll": false,
         "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/lemon-coin/index",
+      "style": {
+        "navigationStyle": "default",
+        "navigationBarTitleText": "柠檬币",
+        "navigationBarBackgroundColor": "#F4F9FF",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/coupon/index",
+      "style": {
+        "navigationBarTitleText": "我的优惠券",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/pay/index",
+      "style": {
+        "navigationBarTitleText": "扫码支付",
+        "navigationBarBackgroundColor": "#F4F9FF",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/property-pay/index",
+      "style": {
+        "navigationBarTitleText": "物业缴费",
+        "navigationBarBackgroundColor": "#F4F9FF",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/bind-house/index",
+      "style": {
+        "navigationBarTitleText": "绑定房产",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/points-detail/index",
+      "style": {
+        "navigationBarTitleText": "积分明细",
+        "navigationBarBackgroundColor": "#3B82F6",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/wallet/index",
+      "style": {
+        "navigationBarTitleText": "我的钱包",
+        "navigationBarBackgroundColor": "#10B981",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/withdraw/index",
+      "style": {
+        "navigationBarTitleText": "余额提现",
+        "navigationBarBackgroundColor": "#F4F9FF",
+        "navigationBarTextStyle": "black"
       }
     },
     {
@@ -42,17 +120,6 @@
       "pages": [
         {
           "path": "pages/invite/poster",
-          "style": {
-            "navigationStyle": "custom"
-          }
-        }
-      ]
-    },
-    {
-      "root": "package-store",
-      "pages": [
-        {
-          "path": "pages/stores/index",
           "style": {
             "navigationStyle": "custom"
           }
@@ -85,7 +152,7 @@
   "preloadRule": {
     "pages/home/index": {
       "network": "all",
-      "packages": ["package-store", "package-platform"]
+      "packages": ["package-platform"]
     },
     "pages/my/index": {
       "network": "all",
@@ -101,6 +168,14 @@
       {
         "pagePath": "pages/home/index",
         "text": "首页"
+      },
+      {
+        "pagePath": "pages/stores/index",
+        "text": "商家"
+      },
+      {
+        "pagePath": "pages/wallet/index",
+        "text": "钱包"
       },
       {
         "pagePath": "pages/my/index",

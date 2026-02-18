@@ -103,51 +103,22 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-
-interface Platform {
-  name: string;
-  icon: string;
-  bgColor: string;
-  rebate: string;
-  url: string;
-  miniProgram?: string;
-}
-
-interface Category {
-  name: string;
-  platforms: Platform[];
-}
+import { getPlatformList, type Platform, type PlatformCategory } from '@/api/modules/platform';
 
 const statusBarHeight = ref(0);
 const menuButtonInfo = ref({ top: 0, height: 0 });
 
-const platformCategories = ref<Category[]>([
-  {
-    name: '综合电商',
-    platforms: [
-      { name: '京东', icon: 'JD', bgColor: '#E4393C', rebate: '返5%', url: 'https://www.jd.com', miniProgram: 'wx91d27dbf599dff74' },
-      { name: '淘宝', icon: 'TB', bgColor: '#FF5000', rebate: '返3%', url: 'https://www.taobao.com' },
-      { name: '拼多多', icon: 'PDD', bgColor: '#E02E24', rebate: '返2%', url: 'https://www.pinduoduo.com', miniProgram: 'wx32540bd863b27570' },
-      { name: '苏宁', icon: 'SN', bgColor: '#FF6600', rebate: '返4%', url: 'https://www.suning.com' }
-    ]
-  },
-  {
-    name: '生活服务',
-    platforms: [
-      { name: '美团', icon: 'MT', bgColor: '#FFC300', rebate: '返3%', url: 'https://www.meituan.com', miniProgram: 'wxde8ac0a21135c07d' },
-      { name: '饿了么', icon: 'ELM', bgColor: '#0085FF', rebate: '返2%', url: 'https://www.ele.me', miniProgram: 'wxece3a9a4c82f58c9' },
-      { name: '滴滴', icon: 'DD', bgColor: '#FF7D00', rebate: '返2%', url: 'https://www.didiglobal.com', miniProgram: 'wxaf35009675aa0b2a' },
-      { name: '猫眼', icon: 'MY', bgColor: '#EF4239', rebate: '返5%', url: 'https://www.maoyan.com' }
-    ]
-  },
-  {
-    name: '图书文娱',
-    platforms: [
-      { name: '当当', icon: 'DD', bgColor: '#FF2832', rebate: '返4%', url: 'https://www.dangdang.com' },
-      { name: '严选', icon: 'YX', bgColor: '#B4A078', rebate: '返3%', url: 'https://you.163.com', miniProgram: 'wx5d5e7705d5f5d5e5' }
-    ]
+const platformCategories = ref<PlatformCategory[]>([]);
+
+const fetchPlatforms = async () => {
+  try {
+    const data = await getPlatformList();
+    platformCategories.value = data;
+  } catch (error) {
+    console.error('Failed to fetch platforms:', error);
+    uni.showToast({ title: '加载失败', icon: 'none' });
   }
-]);
+};
 
 onMounted(() => {
   const systemInfo = uni.getSystemInfoSync();
@@ -157,6 +128,8 @@ onMounted(() => {
   const menuButton = uni.getMenuButtonBoundingClientRect();
   menuButtonInfo.value = menuButton;
   // #endif
+
+  fetchPlatforms();
 });
 
 const navBarStyle = computed(() => {

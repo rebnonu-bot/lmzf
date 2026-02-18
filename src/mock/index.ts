@@ -11,6 +11,7 @@ import {
   type MockResponse,
 } from './core'
 import config from '@/config'
+import { homeMockData } from '@/config/mock.config'
 
 /**
  * 初始化 Mock 数据
@@ -73,6 +74,31 @@ function registerHomeMocks(): void {
       },
     }),
     delay: 300,
+  })
+
+  // 柠檬币交易记录
+  register('GET', '/api/user/coins/transactions', {
+    response: (): MockResponse => {
+      // 从配置中获取数据，保证与 mock.config.ts 一致
+      const transactions = homeMockData.coinTransactions || [
+        { id: '1', title: '邀请好友奖励', time: '2026-02-18 10:30', amount: 50, type: 'income' },
+        { id: '2', title: '兑换优惠券', time: '2026-02-17 15:20', amount: -100, type: 'expense' },
+        { id: '3', title: '每日签到', time: '2026-02-17 09:00', amount: 10, type: 'income' },
+        { id: '4', title: '参与活动奖励', time: '2026-02-16 14:00', amount: 200, type: 'income' },
+        { id: '5', title: '完善个人信息', time: '2026-02-15 11:20', amount: 30, type: 'income' },
+        { id: '6', title: '系统赠送', time: '2026-02-01 00:00', amount: 1060, type: 'income' },
+      ];
+      
+      return {
+        code: 200,
+        message: '请求成功',
+        data: {
+          list: transactions,
+          total: transactions.length
+        },
+      }
+    },
+    delay: 400,
   })
 }
 
@@ -165,6 +191,13 @@ function registerUserMocks(): void {
             nickname: '梅菜扣肉',
             avatar: '/static/avatar1.png',
             level: 'gold',
+            points: 12580,
+            balance: 88.88,
+            coins: 100,
+            coinLabel: '柠檬币',
+            coupons: 5,
+            joinDays: 100,
+            inviteCount: 10
           },
         },
       }

@@ -61,7 +61,7 @@
         <view class="current-location">
           <view class="location-info">
             <t-icon name="location" size="32rpx" color="#000" />
-            <text class="city-name">赣州市</text>
+            <text class="city-name">{{ cityStore.currentCity }}</text>
           </view>
           <text class="re-locate" @click="handleReLocate">重新定位</text>
         </view>
@@ -133,7 +133,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { cityData } from '@/utils/cityData';
+import { useCityStore } from '@/stores/city';
 
+const cityStore = useCityStore();
 const searchValue = ref('');
 const scrollIntoId = ref('');
 
@@ -278,8 +280,9 @@ const selectCity = (city: string) => {
   historyCities.value = history;
   uni.setStorageSync('city_history', JSON.stringify(history));
 
-  // 发送事件通知首页
-  uni.$emit('updateCity', city);
+  // 更新全局状态
+  cityStore.setCity(city);
+  
   uni.navigateBack({
     animationType: 'slide-out-bottom',
     animationDuration: 300

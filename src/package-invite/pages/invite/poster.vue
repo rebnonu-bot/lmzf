@@ -125,39 +125,51 @@
     </view>
 
     <!-- 规则说明 -->
-    <view class="rule-card">
+    <view class="rule-card" v-if="rules.length > 0">
       <view class="rule-header">
         <t-icon name="info-circle" size="32rpx" color="#3B82F6" />
         <text class="rule-title">邀请规则</text>
       </view>
       <view class="rule-list">
-        <view class="rule-item">
-          <view class="rule-num">1</view>
-          <text class="rule-text">好友通过你的邀请注册并绑定房产</text>
-        </view>
-        <view class="rule-item">
-          <view class="rule-num">2</view>
-          <text class="rule-text">好友在平台产生消费，你获得订单金额2%积分奖励</text>
-        </view>
-        <view class="rule-item">
-          <view class="rule-num">3</view>
-          <text class="rule-text">奖励积分永久有效，可抵扣自家物业费</text>
+        <view class="rule-item" v-for="(rule, index) in rules" :key="index">
+          <view class="rule-num">{{ index + 1 }}</view>
+          <text class="rule-text">{{ rule }}</text>
         </view>
       </view>
     </view>
+
+    <!-- 画布组件 (隐藏) -->
+    <canvas 
+      canvas-id="posterCanvas" 
+      id="posterCanvas"
+      class="poster-canvas"
+      :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useUserStore } from '@/stores/user';
+import { getInviteInfo } from '@/api/modules/invite';
 
-const userName = ref('邻檬用户');
-const userAvatar = ref('/static/avatar-default.png');
-const inviteCount = ref(8);
-const rewardPoints = ref(1250);
-const rewardAmount = ref(12.5);
+const userStore = useUserStore();
+
+const userName = computed(() => userStore.nickname.value || '邻檬用户');
+const userAvatar = computed(() => userStore.avatar.value || '/static/avatar-default.png');
+
+const inviteCount = ref(0);
+const rewardPoints = ref(0);
+const rewardAmount = ref(0);
+const rules = ref<string[]>([]);
+
 const statusBarHeight = ref(0);
 const menuButtonInfo = ref({ top: 0, height: 0 });
+
+// 画布相关
+const canvasWidth = ref(375);
+const canvasHeight = ref(600);
+const isGenerating = ref(false);
 
 onMounted(() => {
   const systemInfo = uni.getSystemInfoSync();
@@ -167,7 +179,22 @@ onMounted(() => {
   const menuButton = uni.getMenuButtonBoundingClientRect();
   menuButtonInfo.value = menuButton;
   // #endif
+
+  fetchData();
 });
+
+const fetchData = async () => {
+  try {
+    const data = await getInviteInfo();
+    inviteCount.value = data.inviteCount;
+    rewardPoints.value = data.pointsReward;
+    rewardAmount.value = data.cashReward;
+    rules.value = data.rules;
+  } catch (error) {
+    console.error('Failed to fetch invite info:', error);
+    uni.showToast({ title: '加载失败', icon: 'none' });
+  }
+};
 
 const navBarStyle = computed(() => {
   // #ifdef MP-WEIXIN
@@ -191,12 +218,199 @@ const goBack = () => {
   uni.navigateBack();
 };
 
-const savePoster = () => {
-  uni.showLoading({ title: '生成中...' });
-  setTimeout(() => {
+/**
+ * 绘制圆角矩形
+ */
+const drawRoundRect = (ctx: UniApp.CanvasContext, x: number, y: number, w: number, h: number, r: number) => {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arc(x + w - r, y + r, r, 1.5 * Math.PI, 2 * Math.PI);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arc(x + w - r, y + h - r, r, 0, 0.5 * Math.PI);
+  ctx.lineTo(x + r, y + h);
+  ctx.arc(x + r, y + h - r, r, 0.5 * Math.PI, Math.PI);
+  ctx.lineTo(x, y + r);
+  ctx.arc(x + r, y + r, r, Math.PI, 1.5 * Math.PI);
+  ctx.closePath();
+  ctx.fill();
+};
+
+/**
+ * 绘制海报
+ */
+const drawPoster = async (): Promise<string> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const ctx = uni.createCanvasContext('posterCanvas');
+      const w = canvasWidth.value;
+      const h = canvasHeight.value;
+
+      // 1. 绘制背景
+      const grd = ctx.createLinearGradient(0, 0, 0, h);
+      grd.addColorStop(0, '#3B82F6');
+      grd.addColorStop(0.5, '#60A5FA');
+      grd.addColorStop(1, '#F4F9FF');
+      // @ts-ignore: UniApp types mismatch for gradient
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, w, h);
+
+      // 2. 绘制白色卡片背景
+      ctx.fillStyle = '#FFFFFF';
+      drawRoundRect(ctx, 20, 80, w - 40, h - 120, 16);
+
+      // 3. 绘制用户信息
+      // 头像背景
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(60, 120, 30, 0, 2 * Math.PI);
+      ctx.clip();
+      
+      // 下载头像（如果是网络图片需要先下载）
+      // 这里简化处理，如果是本地路径直接用，网络路径需下载
+      // 实际开发中建议封装一个下载图片的通用方法
+      let avatarPath = '/static/avatar-default.png';
+      if (userAvatar.value.startsWith('http')) {
+        try {
+           const res = await uni.downloadFile({ url: userAvatar.value });
+           if (res.statusCode === 200) {
+             avatarPath = res.tempFilePath;
+           }
+        } catch (e) {
+          console.error('Avatar download failed', e);
+        }
+      } else {
+        avatarPath = userAvatar.value;
+      }
+      
+      // 绘制头像
+      // 注意：drawImage 在不同平台对路径支持不同，这里假设是本地绝对路径或临时路径
+      ctx.drawImage(avatarPath, 30, 90, 60, 60);
+      ctx.restore();
+
+      // 用户名
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText(userName.value, 100, 115);
+      
+      // 邀请语
+      ctx.fillStyle = '#64748B';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('邀请你加入邻檬智付', 100, 140);
+
+      // 4. 绘制主要文案
+      ctx.fillStyle = '#3B82F6';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.setTextAlign('center');
+      ctx.fillText('物业费减免神器', w / 2, 220);
+
+      ctx.fillStyle = '#64748B';
+      ctx.font = '16px sans-serif';
+      ctx.fillText('消费返积分 · 积分抵物业', w / 2, 260);
+
+      // 5. 绘制权益框
+      ctx.fillStyle = '#FEF3C7'; // F59E0B的浅色背景
+      drawRoundRect(ctx, 40, 300, w - 80, 80, 12);
+      
+      ctx.fillStyle = '#D97706';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText('永久返利特权', w / 2, 330);
+      
+      ctx.fillStyle = '#D97706';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('好友每笔消费，你得 2% 积分', w / 2, 360);
+
+      // 6. 绘制二维码区域
+      // 模拟二维码框
+      ctx.fillStyle = '#F4F9FF';
+      const qrSize = 120;
+      const qrX = (w - qrSize) / 2;
+      const qrY = 420;
+      ctx.fillRect(qrX, qrY, qrSize, qrSize);
+      
+      // 绘制二维码中心的 ICON（模拟）
+      ctx.fillStyle = '#3B82F6';
+      ctx.fillRect(qrX + 40, qrY + 40, 40, 40);
+
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('微信扫码，立即加入', w / 2, 570);
+
+      // 开始绘制
+      ctx.draw(false, () => {
+        setTimeout(() => {
+          uni.canvasToTempFilePath({
+            canvasId: 'posterCanvas',
+            success: (res) => {
+              resolve(res.tempFilePath);
+            },
+            fail: (err) => {
+              reject(err);
+            }
+          });
+        }, 200);
+      });
+
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const savePoster = async () => {
+  if (isGenerating.value) return;
+  isGenerating.value = true;
+  uni.showLoading({ title: '正在生成海报...' });
+
+  try {
+    // 1. 生成图片路径
+    const tempFilePath = await drawPoster();
+    
+    // 2. 保存到相册
+    // #ifdef MP-WEIXIN
+    uni.saveImageToPhotosAlbum({
+      filePath: tempFilePath,
+      success: () => {
+        uni.hideLoading();
+        uni.showToast({ title: '已保存到相册', icon: 'success' });
+      },
+      fail: (err) => {
+        uni.hideLoading();
+        console.error('Save failed:', err);
+        // 处理权限拒绝的情况
+        if (err.errMsg.includes('auth deny')) {
+          uni.showModal({
+            title: '提示',
+            content: '需要您授权保存图片到相册',
+            success: (res) => {
+              if (res.confirm) {
+                uni.openSetting();
+              }
+            }
+          });
+        } else {
+          uni.showToast({ title: '保存失败', icon: 'none' });
+        }
+      }
+    });
+    // #endif
+
+    // #ifndef MP-WEIXIN
+    // H5 等平台提示长按保存或预览
     uni.hideLoading();
-    uni.showToast({ title: '海报已保存', icon: 'success' });
-  }, 1000);
+    uni.previewImage({
+      urls: [tempFilePath],
+      current: 0
+    });
+    // #endif
+
+  } catch (error) {
+    console.error('Generate poster failed:', error);
+    uni.hideLoading();
+    uni.showToast({ title: '生成海报失败', icon: 'none' });
+  } finally {
+    isGenerating.value = false;
+  }
 };
 
 const shareToWechat = () => {
@@ -206,7 +420,7 @@ const shareToWechat = () => {
     menus: ['shareAppMessage']
   });
   // #endif
-  uni.showToast({ title: '请分享给微信好友', icon: 'none' });
+  uni.showToast({ title: '请点击右上角分享给微信好友', icon: 'none' });
 };
 
 const shareToTimeline = () => {
@@ -216,11 +430,16 @@ const shareToTimeline = () => {
     menus: ['shareTimeline']
   });
   // #endif
-  uni.showToast({ title: '请分享到朋友圈', icon: 'none' });
+  uni.showToast({ title: '请点击右上角分享到朋友圈', icon: 'none' });
 };
 
 const copyLink = () => {
-  uni.showToast({ title: '链接已复制', icon: 'success' });
+  uni.setClipboardData({
+    data: 'https://lmzf.com/invite?code=123456',
+    success: () => {
+      uni.showToast({ title: '链接已复制', icon: 'success' });
+    }
+  });
 };
 </script>
 
@@ -230,6 +449,20 @@ const copyLink = () => {
   background: #F4F9FF;
   position: relative;
   padding-bottom: 60rpx;
+}
+
+/* 隐藏画布 */
+.poster-canvas {
+  position: fixed;
+  top: 0;
+  left: 9999px;
+  z-index: -1;
+  visibility: hidden;
+  /* #ifdef H5 */
+  visibility: visible; /* H5 需要可见才能绘制 */
+  opacity: 0;
+  pointer-events: none;
+  /* #endif */
 }
 
 /* 顶部渐变背景 */
