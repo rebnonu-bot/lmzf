@@ -117,8 +117,8 @@ const handleCoupons = () => {
     .user-main-info {
       padding: 32rpx 28rpx;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      gap: 32rpx;
       position: relative;
       z-index: 1;
 
@@ -126,8 +126,7 @@ const handleCoupons = () => {
         display: flex;
         align-items: center;
         gap: 24rpx;
-        flex: 1;
-        min-width: 0;
+        width: 100%;
 
         .user-avatar {
           flex-shrink: 0;
@@ -143,20 +142,29 @@ const handleCoupons = () => {
         .name-level-section {
           display: flex;
           flex-direction: column;
-          gap: 12rpx;
+          gap: 8rpx;
+          flex: 1;
           min-width: 0;
 
           .name-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+
             .nickname-wrapper {
               display: flex;
               align-items: center;
               gap: 12rpx;
-              flex-wrap: wrap;
-
+              
               .nickname {
                 font-size: 32rpx;
                 font-weight: 700;
                 color: #1E293B;
+                max-width: 300rpx;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
               }
 
               .level-badge {
@@ -164,6 +172,7 @@ const handleCoupons = () => {
                 font-weight: 600;
                 padding: 4rpx 12rpx;
                 border-radius: 12rpx;
+                flex-shrink: 0;
               }
             }
           }
@@ -186,12 +195,14 @@ const handleCoupons = () => {
               .value {
                 font-size: 26rpx;
                 font-weight: 700;
+                font-family: 'DIN Alternate', -apple-system, sans-serif;
               }
             }
 
             .tag-divider {
               font-size: 22rpx;
               color: #CBD5E1;
+              margin: 0 4rpx;
             }
           }
         }
@@ -199,29 +210,46 @@ const handleCoupons = () => {
 
       .right-stats {
         display: flex;
-        gap: 32rpx;
+        justify-content: space-between;
+        width: 100%;
+        padding-top: 24rpx;
+        border-top: 1rpx solid rgba(226, 232, 240, 0.6);
 
         .stat-item {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 6rpx;
+          gap: 8rpx;
+          flex: 1;
+          position: relative;
+
+          &:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 32rpx;
+            width: 1rpx;
+            background-color: rgba(226, 232, 240, 0.8);
+          }
 
           .stat-value {
-            font-size: 36rpx;
+            font-size: 40rpx;
             font-weight: 700;
             color: #3B82F6;
             font-family: 'DIN Alternate', -apple-system, sans-serif;
+            line-height: 1;
           }
 
           .stat-label {
-            font-size: 22rpx;
+            font-size: 24rpx;
             color: #64748B;
           }
 
           &:active {
             opacity: 0.7;
-            transform: scale(0.96);
+            transform: scale(0.98);
           }
         }
       }
