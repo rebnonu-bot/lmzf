@@ -124,28 +124,7 @@ export async function getStoreList(params?: {
       }, 500);
     });
   }
-    // 关键词过滤
-    if (params?.keyword) {
-      const kw = params.keyword.toLowerCase();
-      filtered = filtered.filter(s => s.name.toLowerCase().includes(kw) || s.address.toLowerCase().includes(kw));
-    }
 
-    // 分类过滤
-    if (params?.category && params.category !== 'all') {
-      filtered = filtered.filter(s => s.category === params.category);
-    }
-
-    // 模拟分页
-    const page = params?.page || 1;
-    const pageSize = params?.pageSize || 10;
-    const start = (page - 1) * pageSize;
-    const list = filtered.slice(start, start + pageSize);
-
-    return Promise.resolve({
-      list,
-      total: filtered.length
-    });
-  }
   return http.get('/stores', params);
 }
 
