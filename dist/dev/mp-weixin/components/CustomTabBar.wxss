@@ -1,0 +1,100 @@
+.custom-tab-bar-container.data-v-55a48eff {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background-color: #ffffff;
+  padding-bottom: env(safe-area-inset-bottom);
+  /* 使用 filter drop-shadow 代替 box-shadow，让阴影跟随圆弧 */
+  filter: drop-shadow(0 -4rpx 10rpx rgba(0, 0, 0, 0.05));
+}
+.custom-tab-bar.data-v-55a48eff {
+  display: flex;
+  height: 100rpx;
+  align-items: center;
+  position: relative;
+  /* 使用伪元素实现圆弧凸起背景 */
+}
+.custom-tab-bar.data-v-55a48eff::before {
+  content: '';
+  position: absolute;
+  top: -40rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120rpx;
+  height: 120rpx;
+  background-color: #ffffff;
+  border-radius: 50%;
+  z-index: -1;
+}
+.tab-item.data-v-55a48eff {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding-bottom: 16rpx;
+}
+.tab-item .tab-icon.data-v-55a48eff {
+  margin-bottom: 6rpx;
+}
+.tab-item .tab-text.data-v-55a48eff {
+  font-size: 24rpx;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1;
+}
+.tab-item.active .tab-text.data-v-55a48eff {
+  color: #3b82f6;
+  font-weight: 600;
+}
+.scan-wrapper.data-v-55a48eff {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  height: 100%;
+  padding-bottom: 16rpx;
+}
+.scan-wrapper .scan-button.data-v-55a48eff {
+  position: absolute;
+  top: -50rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100rpx;
+  height: 100rpx;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
+  border: 8rpx solid #ffffff;
+  /* 调慢呼吸动效，使其更平稳 */
+  animation: scan-breathing-55a48eff 5s ease-in-out infinite;
+  /* 强制开启 GPU 加速，解决卡顿感 */
+  will-change: transform, box-shadow;
+}
+.scan-wrapper .scan-text.data-v-55a48eff {
+  font-size: 26rpx;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1;
+}
+@keyframes scan-breathing-55a48eff {
+0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
+}
+50% {
+    transform: translateX(-50%) scale(1.05);
+    /* 减小放大倍数，从 1.1 降到 1.05 */
+    box-shadow: 0 10rpx 32rpx rgba(59, 130, 246, 0.5);
+    /* 阴影也随之微调 */
+}
+}

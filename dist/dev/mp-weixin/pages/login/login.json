@@ -1,0 +1,12 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "t-navbar": "../../node-modules/@tdesign/uniapp/dist/navbar/navbar",
+    "t-input": "../../node-modules/@tdesign/uniapp/dist/input/input",
+    "t-icon": "../../node-modules/@tdesign/uniapp/dist/icon/icon",
+    "t-radio": "../../node-modules/@tdesign/uniapp/dist/radio/radio",
+    "t-radio-group": "../../node-modules/@tdesign/uniapp/dist/radio-group/radio-group",
+    "t-button": "../../node-modules/@tdesign/uniapp/dist/button/button",
+    "t-link": "../../node-modules/@tdesign/uniapp/dist/link/link"
+  }
+}

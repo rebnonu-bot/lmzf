@@ -1,0 +1,1 @@
+import{aj as t,C as o,a5 as r,S as a,B as i}from"./vendor.Bp5RkrN5.js";const n=a({currentCity:i("current_city")||"赣州市",location:null}),c={currentCity:r(()=>n.currentCity),location:r(()=>n.location)},e={setCity(t){n.currentCity=t,o("current_city",t)},setLocation(t,o){n.location={latitude:t,longitude:o}}},s=()=>({state:t(n),...c,...e});export{s as u};

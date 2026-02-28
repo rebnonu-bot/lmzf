@@ -1,0 +1,55 @@
+.location-header.data-v-a6a81833 {
+  position: relative;
+  z-index: 100;
+  /* 小程序端样式 */
+  /* H5 端样式 */
+}
+.location-header .brand-location.mp-weixin.data-v-a6a81833 {
+  position: absolute;
+  left: 32rpx;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  /* top 在 onMounted 中通过 style 动态设置 */
+}
+.location-header .brand-location.mp-weixin.data-v-a6a81833:active {
+  opacity: 0.7;
+}
+.location-header .brand-location.data-v-a6a81833 {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.location-header .brand-location.data-v-a6a81833:active {
+  opacity: 0.7;
+}
+.location-header .brand-location .brand-text.data-v-a6a81833 {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5rpx;
+}
+.location-header .brand-location .dot.data-v-a6a81833 {
+  color: #ffffff;
+  margin: 0 4rpx;
+  font-weight: bold;
+  font-size: 28rpx;
+}
+.location-header .brand-location .city-text.data-v-a6a81833 {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.5rpx;
+  margin-right: 2rpx;
+}
+.location-header .brand-location .arrow-icon.data-v-a6a81833 {
+  margin-top: 4rpx;
+  width: 26rpx !important;
+  height: 26rpx !important;
+  transition: transform 0.3s ease;
+}
+.location-header:active .arrow-icon.data-v-a6a81833 {
+  transform: rotate(180deg);
+}

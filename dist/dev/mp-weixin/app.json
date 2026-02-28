@@ -1,0 +1,50 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/my/index",
+    "pages/scan/index",
+    "pages/city-select/index"
+  ],
+  "subPackages": [
+    {
+      "root": "pages/login",
+      "pages": [
+        "login"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "邻檬智付",
+    "navigationBarBackgroundColor": "#fff",
+    "backgroundColor": "#f3f3f3"
+  },
+  "tabBar": {
+    "custom": false,
+    "color": "#64748B",
+    "selectedColor": "#3B82F6",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/my/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "darkmode": true,
+  "lazyCodeLoading": "requiredComponents",
+  "rendererOptions": {
+    "skyline": {
+      "disableABTest": true,
+      "defaultDisplayBlock": true,
+      "defaultContentBox": true,
+      "sdkVersionBegin": "3.4.3",
+      "sdkVersionEnd": "15.255.255"
+    }
+  },
+  "usingComponents": {}
+}

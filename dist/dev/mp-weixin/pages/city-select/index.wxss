@@ -1,0 +1,201 @@
+.city-select-container.data-v-02ed011e {
+  min-height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+.nav-bar.data-v-02ed011e {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 32rpx;
+  padding-right: 32rpx;
+  background-color: #ffffff;
+  box-sizing: content-box;
+}
+.nav-bar .back-icon.data-v-02ed011e {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-bar .nav-title.data-v-02ed011e {
+  font-size: 32rpx;
+  font-weight: 500;
+}
+.nav-bar .placeholder.data-v-02ed011e {
+  width: 48rpx;
+}
+.search-section.data-v-02ed011e {
+  padding: 10rpx 32rpx;
+  /* 压缩搜索栏 */
+  background-color: #ffffff;
+}
+.city-scroll.data-v-02ed011e {
+  background-color: #ffffff;
+}
+.section-title.data-v-02ed011e {
+  padding: 24rpx 32rpx 12rpx;
+  /* 压缩分类标题间距 */
+  font-size: 26rpx;
+  color: #999;
+  background-color: #ffffff;
+}
+.current-location.data-v-02ed011e {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8rpx 60rpx 12rpx 32rpx;
+  /* 压缩定位区域 */
+  background-color: #ffffff;
+}
+.current-location .location-info.data-v-02ed011e {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.current-location .location-info .city-name.data-v-02ed011e {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #000;
+}
+.current-location .re-locate.data-v-02ed011e {
+  font-size: 26rpx;
+  color: #3B82F6;
+  font-weight: bold;
+}
+.history-cities.data-v-02ed011e {
+  padding: 8rpx 32rpx 12rpx;
+  /* 压缩历史记录间距 */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+.history-cities .city-tag.data-v-02ed011e {
+  min-width: 150rpx;
+  height: 60rpx;
+  background: #fff;
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  color: #333;
+  padding: 0 16rpx;
+}
+.hot-cities.data-v-02ed011e {
+  padding: 8rpx 60rpx 12rpx 32rpx;
+  /* 压缩热门城市间距 */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16rpx;
+  background-color: #ffffff;
+}
+.hot-cities .hot-city-item.data-v-02ed011e {
+  height: 64rpx;
+  background: #fff;
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  color: #333;
+}
+.hot-cities .hot-city-item.data-v-02ed011e:active {
+  background-color: #f0f0f0;
+}
+.hot-cities .no-results.data-v-02ed011e {
+  padding: 100rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+.city-list.data-v-02ed011e {
+  background-color: #ffffff;
+}
+.city-list .letter-header.data-v-02ed011e {
+  padding: 8rpx 32rpx;
+  font-size: 24rpx;
+  color: #999;
+  background-color: #f5f5f5;
+}
+.city-list .city-item.data-v-02ed011e {
+  padding: 24rpx 60rpx 24rpx 32rpx;
+  /* 压缩列表项高度 */
+  font-size: 28rpx;
+  color: #333;
+  border-bottom: 1rpx solid #f5f5f5;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.city-list .city-item.data-v-02ed011e:active {
+  background-color: #f0f0f0;
+}
+.city-list .city-item .city-province.data-v-02ed011e {
+  font-size: 24rpx;
+  color: #ccc;
+}
+.search-results .search-header.data-v-02ed011e {
+  padding: 20rpx 32rpx;
+  background-color: #f8fafc;
+}
+.search-results .search-header .search-count.data-v-02ed011e {
+  font-size: 24rpx;
+  color: #64748b;
+}
+.search-results .no-results.data-v-02ed011e {
+  padding-top: 200rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.search-results .no-results .empty-icon-wrapper.data-v-02ed011e {
+  width: 160rpx;
+  height: 160rpx;
+  background-color: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32rpx;
+}
+.search-results .no-results .empty-text.data-v-02ed011e {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 12rpx;
+}
+.search-results .no-results .empty-sub-text.data-v-02ed011e {
+  font-size: 26rpx;
+  color: #94a3b8;
+}
+.index-bar.data-v-02ed011e {
+  position: fixed;
+  right: 6rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  /* 居中对齐 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+  /* 调大字母间距，防止误触 */
+  z-index: 10;
+}
+.index-bar .index-item.data-v-02ed011e {
+  font-size: 20rpx;
+  color: #666;
+  padding: 6rpx 10rpx;
+  /* 增加点击热区 */
+  line-height: 1.1;
+}

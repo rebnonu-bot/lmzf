@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "t-icon": "../../node-modules/@tdesign/uniapp/dist/icon/icon",
+    "custom-tab-bar": "../../components/CustomTabBar",
+    "location-header": "../../components/LocationHeader"
+  }
+}

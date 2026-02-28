@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "custom",
+  "disableScroll": false,
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "t-icon": "../../node-modules/@tdesign/uniapp/dist/icon/icon",
+    "t-search": "../../node-modules/@tdesign/uniapp/dist/search/search"
+  }
+}

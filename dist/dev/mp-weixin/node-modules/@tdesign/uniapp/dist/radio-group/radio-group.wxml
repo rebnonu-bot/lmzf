@@ -1,0 +1,1 @@
+<view style="{{d}}" class="{{e}}" aria-role="radiogroup"><slot/><t-radio wx:for="{{a}}" wx:for-item="item" wx:key="b" u-r="{{b}}" class="{{['r-i-f', c]}}" data-index="{{item.c}}" data-value="{{item.d}}" data-allow-uncheck="{{item.e}}" bindchange="{{item.f}}" u-i="{{item.g}}" bind:__l="__l" u-p="{{item.h}}"/></view>

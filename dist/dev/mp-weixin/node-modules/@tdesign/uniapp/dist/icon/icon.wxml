@@ -1,0 +1,1 @@
+<view class="{{['data-v-04ed8512', g, h]}}" style="{{i}}" aria-hidden="{{j}}" aria-label="{{k}}" aria-role="{{l}}" bindtap="{{m}}"><view wx:if="{{a}}" class="{{['data-v-04ed8512', d]}}"><image src="{{b}}" mode="aspectFit" class="{{['data-v-04ed8512', c]}}"/></view><view wx:if="{{e}}" class="{{['data-v-04ed8512', f]}}"/></view>

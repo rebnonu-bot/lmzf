@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "t-icon": "../node-modules/@tdesign/uniapp/dist/icon/icon"
+  }
+}

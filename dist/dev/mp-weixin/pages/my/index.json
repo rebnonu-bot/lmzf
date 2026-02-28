@@ -1,0 +1,13 @@
+{
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "t-avatar": "../../node-modules/@tdesign/uniapp/dist/avatar/avatar",
+    "t-tag": "../../node-modules/@tdesign/uniapp/dist/tag/tag",
+    "t-icon": "../../node-modules/@tdesign/uniapp/dist/icon/icon",
+    "t-cell": "../../node-modules/@tdesign/uniapp/dist/cell/cell",
+    "t-cell-group": "../../node-modules/@tdesign/uniapp/dist/cell-group/cell-group",
+    "t-button": "../../node-modules/@tdesign/uniapp/dist/button/button",
+    "custom-tab-bar": "../../components/CustomTabBar"
+  }
+}

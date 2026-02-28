@@ -1,0 +1,13 @@
+# 忽略所有文件
+/*
+
+# 但保留 dist 文件夹
+!dist/
+!dist/**
+
+# 保留 README 文件
+!README.md
+
+# 保留 .gitignore 自身
+!.gitignore
+

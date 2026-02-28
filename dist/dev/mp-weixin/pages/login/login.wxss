@@ -1,0 +1,65 @@
+.login__title.data-v-cdfe2409 {
+  color: rgba(0, 0, 0, 0.9);
+  font-size: 56rpx;
+  font-weight: 600;
+  line-height: 72rpx;
+  padding: 16rpx 32rpx 40rpx;
+}
+.login__input .input-label.data-v-cdfe2409 {
+  display: flex;
+  padding-right: 32rpx;
+  box-sizing: border-box;
+  border-right: 1rpx solid #e7e7e7;
+}
+.login__input .input-icon.data-v-cdfe2409 {
+  margin-left: 8rpx;
+}
+.login__tips.data-v-cdfe2409 {
+  color: rgba(0, 0, 0, 0.4);
+  font-size: 24rpx;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 40rpx;
+  margin: 24rpx 32rpx 32rpx;
+}
+.login__button.data-v-cdfe2409 {
+  margin: 0 32rpx;
+}
+.login__password--forget.data-v-cdfe2409 {
+  display: flex;
+  font-size: 24rpx;
+  align-items: center;
+  margin: 32rpx;
+  line-height: 40rpx;
+}
+.login__others.data-v-cdfe2409 {
+  margin: 64rpx 32rpx auto 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.login__others-label.data-v-cdfe2409 {
+  min-width: 96rpx;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 24rpx;
+  line-height: 40rpx;
+}
+.login__others-buttons.data-v-cdfe2409 {
+  flex: 1;
+  margin-left: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.login__others-buttons .button.data-v-cdfe2409 {
+  margin: 0 !important;
+}
+.login__others-buttons .button.data-v-cdfe2409:not(:last-child) {
+  margin-right: 32rpx !important;
+}
+.login.data-v-cdfe2409 .t-radio {
+  --td-radio-icon-size: 32rpx;
+  --td-radio-label-line-height: 40rpx;
+  align-items: center;
+  margin-left: 32rpx;
+}
